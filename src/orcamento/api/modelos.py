@@ -103,6 +103,52 @@ class TotaisPorFuncao(RespostaComAno):
     funcoes: list[TotalFuncao]
 
 
+class TotalSubfuncao(BaseModel):
+    posicao: int
+    subfuncao_codigo: str
+    subfuncao_nome: str
+    valor: Decimal
+    participacao_pct: Decimal
+
+
+class TotaisPorSubfuncao(RespostaComAno):
+    medida: Medida
+    mes_inicio: int
+    mes_fim: int
+    funcao_codigo: str | None
+    funcao_nome: str | None
+    total_geral: Decimal | None = Field(
+        description="Total de TODAS as subfunções do recorte (função/período), mesmo com busca.")
+    total_filtrado: Decimal | None = Field(
+        description="Soma das subfunções que casaram com a busca. Use este campo quando a "
+                    "pergunta pedir o total de um tema; não some os itens por conta própria.")
+    subfuncoes: list[TotalSubfuncao]
+
+
+class TotalTipoGasto(BaseModel):
+    posicao: int
+    elemento_nome: str
+    subelemento_nome: str | None
+    valor: Decimal
+    participacao_pct: Decimal
+
+
+class TotaisPorTipoGasto(RespostaComAno):
+    medida: Medida
+    nivel: str
+    mes_inicio: int
+    mes_fim: int
+    orgao_codigo: str | None
+    orgao_nome: str | None
+    total_geral: Decimal | None = Field(
+        description="Total de despesa do recorte (órgão/período), mesmo com busca.")
+    total_filtrado: Decimal | None = Field(
+        description="Soma dos tipos de gasto que casaram com a busca (ex.: tudo que tem "
+                    "'publicidade' no nome). Use este campo para o total de um tema; não some "
+                    "os itens por conta própria.")
+    itens: list[TotalTipoGasto]
+
+
 # ------------------------------------------------------------------ receitas
 class TotalOrigemReceita(BaseModel):
     posicao: int

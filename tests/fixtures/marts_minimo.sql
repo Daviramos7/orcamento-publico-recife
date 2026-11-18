@@ -19,11 +19,20 @@ insert into marts.dim_credor values
   (3, '222', 'EMPRESA A', true),   -- mesmo nome, outro código: deve consolidar
   (4, '333', 'EMPRESA B', true);
 
-create table marts.dim_classif_funcional (sk_classif_funcional int, funcao_codigo text, funcao_nome text);
-insert into marts.dim_classif_funcional values (1, '10', 'SAÚDE'), (2, '12', 'EDUCAÇÃO');
+create table marts.dim_classif_funcional (sk_classif_funcional int, funcao_codigo text, funcao_nome text,
+                                          subfuncao_codigo text, subfuncao_nome text);
+-- A subfunção 131 aparece em duas funções (como no dado real): soma por subfunção.
+insert into marts.dim_classif_funcional values
+  (1, '10', 'SAÚDE', '301', 'ATENÇÃO BÁSICA'),
+  (2, '12', 'EDUCAÇÃO', '131', 'COMUNICAÇÃO SOCIAL'),
+  (3, '10', 'SAÚDE', '131', 'COMUNICAÇÃO SOCIAL');
 
-create table marts.dim_classif_economica (sk_classif_economica int, modalidade_aplicacao_codigo text);
-insert into marts.dim_classif_economica values (1, '90'), (2, '91');
+create table marts.dim_classif_economica (sk_classif_economica int, modalidade_aplicacao_codigo text,
+                                          elemento_nome text, subelemento_nome text);
+insert into marts.dim_classif_economica values
+  (1, '90', 'OUTROS SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA', 'SERVIÇOS DE PUBLICIDADE E PROPAGANDA'),
+  (2, '91', 'OUTROS SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA', 'PUBLICIDADE OFICIAL/LEGAL'),
+  (3, '90', 'MATERIAL DE CONSUMO', 'COMBUSTÍVEIS');
 
 create table marts.fato_despesa_movimento (
   sk_unidade int, sk_credor int, sk_mes int, sk_classif_economica int, sk_classif_funcional int,
@@ -31,8 +40,8 @@ create table marts.fato_despesa_movimento (
 insert into marts.fato_despesa_movimento values
   -- saúde: jan 100, fev 300  | educação: jan 100, fev -50 (anulação) + 50 intra
   (1, 2, 202301, 1, 1, 100, 100,  80),
-  (1, 3, 202302, 1, 1, 300, 300, 300),
-  (2, 4, 202301, 1, 2, 100, 100, 100),
+  (1, 3, 202302, 1, 3, 300, 300, 300),
+  (2, 4, 202301, 3, 2, 100, 100, 100),
   (2, 1, 202302, 1, 2, -50, -50, -50),
   (2, 4, 202302, 2, 2,  50,  50,  50);
 

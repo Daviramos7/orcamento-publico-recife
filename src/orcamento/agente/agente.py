@@ -14,7 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from orcamento.agente.verificacao import numeros_sem_suporte
+from orcamento.agente.verificacao import numeros_derivados, numeros_sem_suporte
 
 MAX_ITERACOES = 6
 FRASE_SEM_DADO = "Não tenho esse dado"
@@ -58,7 +58,38 @@ com busca).
 = despesas_funcoes. Para despesa, use a medida 'liquidado' quando a pergunta não especificar.
 7. Responda de forma curta e direta, dizendo a medida usada (empenhado/liquidado/pago/arrecadado)."""
 
-PROMPTS = {"v1": _PROMPT_V1, "v2": _PROMPT_V2}
+# v3 (2026-11-18): v1 + subfunção/tipo de gasto (endpoints novos) + parar cedo. Motivo: na
+# pergunta "qual foi o gasto em publicidade" o agente rodou 6 rodadas em círculo (3 chamadas
+# iguais a despesas_orgaos) e só parou no limite. Ver evals/README.md.
+_PROMPT_V3 = f"""Você é um assistente que responde perguntas sobre receitas e despesas \
+públicas da Prefeitura do Recife, em português do Brasil.
+
+REGRAS OBRIGATÓRIAS:
+1. Só use números que vieram das ferramentas. NUNCA invente, estime ou calcule valores por \
+conta própria (nem somas, nem diferenças, nem percentuais): se precisar de um total, use o \
+campo que a ferramenta já entrega (total_geral, total_filtrado, participacao_pct). Se a \
+pergunta pedir uma conta que nenhuma ferramenta entrega, traga os valores e diga que o \
+cálculo não vem pronto da API.
+2. Cite os valores exatamente como vieram, em reais, no formato brasileiro com centavos. \
+Exemplo: 7882016730.69 vira "R$ 7.882.016.730,69". Percentuais: "21,38%".
+3. Se nenhuma ferramenta tiver o dado (outro ano, nível de detalhe inexistente, assunto fora \
+do escopo), responda começando com "{FRASE_SEM_DADO}" e explique em uma frase o que falta. \
+Na dúvida sobre o que existe, chame metadados.
+4. Para filtrar por órgão, descubra o código com a ferramenta orgaos antes.
+5. Escolha a ferramenta pelo tipo de pergunta:
+   - "quanto o órgão/secretaria X gastou" = despesas_orgaos;
+   - "quanto foi gasto COM saúde/educação" (a área) = despesas_funcoes;
+   - o detalhe da área (atenção básica, ensino fundamental, iluminação pública, comunicação \
+social) = despesas_subfuncoes;
+   - COM O QUE se gastou (publicidade, combustível, aluguel, diárias, energia) = \
+despesas_tipos_de_gasto com busca, respondendo com total_filtrado;
+   - empresa ou pessoa que recebeu = despesas_credores_ranking com busca.
+   Para despesa, use a medida 'liquidado' quando a pergunta não especificar.
+6. Não repita a mesma ferramenta com argumentos parecidos. Se duas tentativas não \
+trouxerem o dado, pare e responda com "{FRASE_SEM_DADO}", dizendo o que procurou.
+7. Responda de forma curta e direta, dizendo a medida usada (empenhado/liquidado/pago/arrecadado)."""
+
+PROMPTS = {"v1": _PROMPT_V1, "v2": _PROMPT_V2, "v3": _PROMPT_V3}
 PROMPT_PADRAO = "v1"
 
 
@@ -83,6 +114,11 @@ class RespostaAgente:
     @property
     def numeros_sem_suporte(self) -> list[str]:
         return numeros_sem_suporte(self.texto, [c.resultado for c in self.chamadas], self.pergunta)
+
+    @property
+    def numeros_derivados(self) -> dict[str, str]:
+        """Subconjunto dos sem suporte que é uma conta certa entre números da API."""
+        return numeros_derivados(self.texto, [c.resultado for c in self.chamadas], self.pergunta)
 
 
 Executor = Callable[[str, dict[str, Any]], tuple[bool, str]]
@@ -121,7 +157,10 @@ class Agente:
         self.executar = executar
         self.max_tokens = max_tokens    # teto de tokens por resposta do LLM (custo/cota)
 
-    def perguntar(self, pergunta: str) -> RespostaAgente:
+    def perguntar(self, pergunta: str,
+                  ao_chamar: Callable[[Chamada], None] | None = None) -> RespostaAgente:
+        """ao_chamar: opcional, recebe cada Chamada assim que a tool responde (o app usa para
+        mostrar os passos ao vivo). Não altera o resultado."""
         mensagens: list[dict[str, Any]] = [
             {"role": "system", "content": self.prompt},
             {"role": "user", "content": pergunta},
@@ -153,7 +192,10 @@ class Agente:
                     ok, resultado, args = False, json.dumps({"erro": "argumentos não são JSON"}), {}
                 else:
                     ok, resultado = self.executar(c.function.name, args)
-                resposta.chamadas.append(Chamada(c.function.name, args, ok, resultado))
+                chamada = Chamada(c.function.name, args, ok, resultado)
+                resposta.chamadas.append(chamada)
+                if ao_chamar:
+                    ao_chamar(chamada)
                 mensagens.append({"role": "tool", "tool_call_id": c.id, "content": resultado})
 
         resposta.texto = f"{FRASE_SEM_DADO}: não consegui concluir a consulta em {MAX_ITERACOES} passos."

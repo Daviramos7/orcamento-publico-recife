@@ -68,13 +68,28 @@ MAX_PERGUNTAS = 15                                                    # por sess
 LIMITE_DIARIO = int(os.getenv("LIMITE_DIARIO_PERGUNTAS", "200"))      # todos os visitantes
 INTERVALO_S = 5
 SUGESTOES = [
-    "Quanto a prefeitura arrecadou em 2023?",
     "Quanto foi arrecadado de IPTU?",
     "Quais órgãos mais gastaram?",
-    "Quanto foi gasto com saúde?",
+    "Quanto a prefeitura gastou com publicidade?",
+    "Dentro da saúde, para onde foi o dinheiro?",
     "A prefeitura arrecadou mais do que gastou?",
     "Quem mais recebeu pagamentos da prefeitura?",
 ]
+# Nome legível de cada ferramenta do agente, para a trilha de consultas na tela.
+PASSOS = {
+    "metadados": "Conferiu o que existe nos dados",
+    "orgaos": "Procurou o órgão",
+    "despesas_orgaos": "Gasto por órgão",
+    "despesas_evolucao_mensal": "Gasto mês a mês",
+    "despesas_credores_ranking": "Quem recebeu da prefeitura",
+    "despesas_funcoes": "Gasto por área de governo",
+    "despesas_subfuncoes": "Gasto por subárea",
+    "despesas_tipos_de_gasto": "Gasto por tipo (com o que se gastou)",
+    "receitas_origens": "Receita por origem",
+    "receitas_itens": "Item de receita (impostos, transferências)",
+    "receitas_evolucao_mensal": "Receita mês a mês",
+    "comparativo_receita_despesa": "Receita × despesa",
+}
 REPO = "https://github.com/Daviramos7/orcamento-publico-recife"
 
 # Azulejo: um ladrilho de 48px desenhado em SVG, repetido no fundo do topo.
@@ -167,15 +182,37 @@ st.markdown(
       div[class*="st-key-sug_"] button:hover {{ border-color: var(--rio); color: var(--rio); }}
       div[class*="st-key-sug_"] button p {{ font-size: .95rem; }}
       [data-testid="stChatMessage"] {{ background: transparent; padding: .6rem 0; }}
-      [data-testid="stChatMessageAvatarUser"], [data-testid="stChatMessageAvatarAssistant"] {{
-        border-radius: 10px; }}
-      [data-testid="stChatMessageAvatarAssistant"] {{ background: var(--rio); color: #fff; }}
+      [data-testid="stChatMessageAvatarCustom"] {{ border-radius: 10px; }}
       .selos {{ display: flex; flex-wrap: wrap; gap: .4rem; margin: .1rem 0 .4rem; }}
       .selo {{ display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem;
         padding: .18rem .6rem; border-radius: 999px; border: 1px solid; }}
       .selo.ok {{ color: #1d6b3f; border-color: #b8dcc6; background: #eef7f1; }}
       .selo.alerta {{ color: #8a4b00; border-color: #f0d2a6; background: #fdf5ea; }}
       .selo.info {{ color: var(--rio); border-color: #c4d6dd; background: #eef4f6; }}
+      .selo.calc {{ color: #5b3fa0; border-color: #d9cff0; background: #f4f0fb; }}
+      /* trilha de consultas do agente */
+      .trilha {{ list-style: none; margin: .2rem 0 .3rem; padding: 0 0 0 .2rem; }}
+      .trilha li {{ position: relative; padding: 0 0 .7rem 1.6rem; font-size: .9rem; color: var(--tinta); }}
+      .trilha li::before {{ content: ""; position: absolute; left: .32rem; top: 1.15rem; bottom: 0;
+        width: 2px; background: var(--linha); }}
+      .trilha li:last-child::before {{ display: none; }}
+      .trilha .bola {{ position: absolute; left: 0; top: .15rem; width: .85rem; height: .85rem;
+        border-radius: 50%; background: var(--rio); box-shadow: 0 0 0 3px #e3edf0; }}
+      .trilha .bola.erro {{ background: #b3261e; box-shadow: 0 0 0 3px #f6e3e1; }}
+      .trilha .args {{ display: block; color: var(--tinta-2); font-size: .82rem; margin-top: .1rem; }}
+      .agente-id {{ display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+        padding: .75rem 1rem; border: 1px solid var(--linha); border-radius: 14px;
+        background: var(--branco); margin: .2rem 0 1rem; font-size: .88rem; color: var(--tinta-2); }}
+      .agente-id b {{ color: var(--tinta); font-weight: 600; }}
+      .agente-id .pulso {{ width: .55rem; height: .55rem; border-radius: 50%; background: #1d8a4e;
+        box-shadow: 0 0 0 3px #dff1e6; display: inline-block; margin-right: .35rem; }}
+      .meta-resp {{ font-size: .78rem; color: var(--tinta-3); margin: .1rem 0 .2rem; }}
+      /* a caixa de pergunta fica presa no rodapé da tela, mesmo dentro da aba */
+      .stTabs [data-testid="stChatInput"] {{ position: fixed; bottom: 1rem; left: 50%;
+        transform: translateX(-50%); width: min(1020px, calc(100vw - 2rem)); z-index: 50;
+        box-shadow: 0 6px 24px rgba(19, 34, 46, .16); border-radius: 12px; }}
+      /* espaço para a caixa fixa não cobrir o fim da conversa */
+      .stTabs [data-baseweb="tab-panel"]:has([data-testid="stChatInput"]) {{ padding-bottom: 5.5rem; }}
       .cota {{ font-size: .86rem; color: var(--tinta-2); margin: .2rem 0 .8rem; }}
       .cota .barra {{ display: inline-block; width: 90px; height: 6px; border-radius: 3px;
         background: var(--linha); vertical-align: middle; margin: 0 .45rem; overflow: hidden; }}
@@ -352,9 +389,22 @@ def votar(id_interacao: int | None, polegar: int) -> None:
         pass
 
 
+def _args_legiveis(argumentos: dict) -> str:
+    return " · ".join(f"{k.replace('_', ' ')}: {v}" for k, v in argumentos.items()) or "sem filtros"
+
+
 def perguntar(pergunta: str) -> dict:
+    inicio = time.time()
+    status = st.status("O agente está lendo a pergunta…", expanded=True)
+
+    def ao_chamar(c) -> None:
+        status.update(label=f"Consultando a API: {PASSOS.get(c.ferramenta, c.ferramenta)}…")
+        status.markdown(f"{'✓' if c.ok else '✗'} **{PASSOS.get(c.ferramenta, c.ferramenta)}**  \n"
+                        f"<small>{html.escape(_args_legiveis(c.argumentos))}</small>",
+                        unsafe_allow_html=True)
+
     try:
-        resp = agente().perguntar(pergunta)
+        resp = agente().perguntar(pergunta, ao_chamar=ao_chamar)
     except openai.RateLimitError:
         return {"pergunta": pergunta, "erro": "O limite gratuito do modelo foi atingido. "
                                                "Tente de novo em cerca de 1 minuto."}
@@ -363,13 +413,20 @@ def perguntar(pergunta: str) -> dict:
                                                "indisponível agora. Tente em alguns minutos."}
     except openai.AuthenticationError:
         return {"pergunta": pergunta, "erro": "Chave do modelo de IA inválida (configuração)."}
+    finally:
+        status.update(label="Resposta pronta", state="complete", expanded=False)
+    from orcamento.agente.verificacao import tem_numero_de_dado
     return {
         "pergunta": pergunta,
         "texto": resp.texto,
         "chamadas": [{"ferramenta": c.ferramenta, "argumentos": c.argumentos, "ok": c.ok}
                      for c in resp.chamadas],
         "sem_suporte": resp.numeros_sem_suporte,
+        "derivados": resp.numeros_derivados,
+        "tem_numeros": tem_numero_de_dado(resp.texto),
         "guardrail": resp.guardrail,
+        "modelo": resp.modelo,
+        "segundos": round(time.time() - inicio, 1),
         "id": registrar_interacao(resp),
     }
 
@@ -378,37 +435,87 @@ AVATAR_AGENTE = ":material/account_balance:"
 AVATAR_PESSOA = ":material/person:"
 
 
+def _selos(item: dict) -> list[tuple[str, str, str]]:
+    """Selo verde só quando há número para conferir; conta certa sobre números da API ganha
+    selo próprio; número sem explicação continua como alerta."""
+    derivados = item.get("derivados") or {}
+    sem_explicacao = [n for n in item["sem_suporte"] if n not in derivados]
+    selos = []
+    if sem_explicacao:
+        selos.append(("alerta", "⚠", "Números sem suporte na API: " + html.escape(", ".join(sem_explicacao))))
+    elif item.get("tem_numeros", True) and item["chamadas"]:
+        selos.append(("ok", "✓", "Números conferidos com a API" if not derivados else
+                      "Valores conferidos com a API"))
+    for n, conta in derivados.items():
+        selos.append(("calc", "∑", f"{html.escape(n)} foi calculado a partir da API: {html.escape(conta)}"))
+    if item["guardrail"]:
+        selos.append(("info", "⛨", "Ajustada pelo guardrail de ano"))
+    return selos
+
+
+def _digitar(texto: str):
+    """Mostra a resposta nova aparecendo aos poucos (só na primeira vez que ela é exibida)."""
+    for palavra in texto.split(" "):
+        yield palavra + " "
+        time.sleep(0.012)
+
+
 def mostrar_resposta(i: int, item: dict) -> None:
     with st.chat_message("assistant", avatar=AVATAR_AGENTE):
         if item.get("erro"):
             st.warning(item["erro"], icon=":material/hourglass_top:")
             return
-        st.markdown(sem_latex(item["texto"]))
-        selos = []
-        if item["sem_suporte"]:
-            selos.append(("alerta", "⚠", "Números sem suporte na API: "
-                          + html.escape(", ".join(item["sem_suporte"]))))
-        elif item["chamadas"]:
-            selos.append(("ok", "✓", "Todos os números conferidos com a API"))
-        if item["guardrail"]:
-            selos.append(("info", "⛨", "Ajustada pelo guardrail de ano"))
+        if st.session_state.get("animar") == i:
+            st.write_stream(_digitar(sem_latex(item["texto"])))
+            st.session_state.pop("animar")
+        else:
+            st.markdown(sem_latex(item["texto"]))
+        selos = _selos(item)
         if selos:
             st.markdown('<div class="selos">' + "".join(
                 f'<span class="selo {c}"><span aria-hidden="true">{ic}</span>{t}</span>'
                 for c, ic, t in selos) + "</div>", unsafe_allow_html=True)
-        if item["chamadas"]:
-            n = len(item["chamadas"])
+        n = len(item["chamadas"])
+        if item.get("modelo"):
+            st.markdown(f'<div class="meta-resp">{html.escape(item["modelo"])} · {n} consulta'
+                        f'{"s" if n != 1 else ""} à API · {str(item.get("segundos", "")).replace(".", ",")} s</div>',
+                        unsafe_allow_html=True)
+        if n:
             with st.expander(f"Como cheguei nessa resposta ({n} consulta{'s' if n > 1 else ''} à API)",
                              icon=":material/manage_search:"):
-                for c in item["chamadas"]:
-                    st.markdown(f"**`{c['ferramenta']}`** {'✅' if c['ok'] else '❌'}")
-                    st.code(json.dumps(c["argumentos"], ensure_ascii=False), language="json")
+                st.markdown('<ol class="trilha">' + "".join(
+                    f'<li><span class="bola{"" if c["ok"] else " erro"}"></span>'
+                    f'<b>{html.escape(PASSOS.get(c["ferramenta"], c["ferramenta"]))}</b>'
+                    f'<span class="args">{html.escape(_args_legiveis(c["argumentos"]))} · '
+                    f'<code>{html.escape(c["ferramenta"])}</code></span></li>'
+                    for c in item["chamadas"]) + "</ol>", unsafe_allow_html=True)
         voto = st.feedback("thumbs", key=f"voto_{i}")
         votados = st.session_state.setdefault("votados", set())
         if voto is not None and i not in votados:
             votar(item.get("id"), voto)
             votados.add(i)
             st.toast("Feedback registrado. Obrigado!", icon=":material/thumb_up:")
+
+
+def rolar_para_ultima_pergunta() -> None:
+    """Depois de uma resposta nova, leva a tela até a última pergunta. Sem isso, a página
+    mantém a rolagem antiga e a resposta fica abaixo da dobra (bug reproduzido em 2026-11-18)."""
+    import streamlit.components.v1 as components
+    # O comentário com o horário muda o HTML a cada chamada: sem isso o Streamlit reaproveita o
+    # iframe anterior e o script não roda de novo.
+    components.html(f"<!-- {time.time_ns()} -->" + """<script>
+      const rolar = (tentativas) => {
+        const doc = window.parent.document;
+        // Mensagens da pessoa = avatar com o ícone "person" (AVATAR_PESSOA).
+        const perguntas = [...doc.querySelectorAll('[data-testid="stChatMessage"]')].filter(m => {
+          const ic = m.querySelector('[data-testid="stIconMaterial"]');
+          return ic && ic.textContent.trim() === 'person';
+        });
+        if (!perguntas.length) { if (tentativas > 0) setTimeout(() => rolar(tentativas - 1), 150); return; }
+        perguntas[perguntas.length - 1].scrollIntoView({behavior: 'smooth', block: 'start'});
+      };
+      setTimeout(() => rolar(20), 120);
+    </script>""", height=0)
 
 
 # ------------------------------------------------------------------ dados do topo
@@ -463,12 +570,20 @@ with aba_chat:
     else:
         historico = st.session_state.setdefault("historico", [])
 
-        if not historico:
+        # Pergunta acabou de ser enviada? Some com as sugestões para o passo a passo do agente
+        # aparecer logo abaixo da pergunta, e não lá embaixo da página.
+        enviando = bool(st.session_state.get("entrada") or st.session_state.get("pendente"))
+        if not historico and not enviando:
             st.markdown(
                 '<div class="vazio"><h3>Pergunte em português</h3>'
                 "<p>O agente consulta a mesma API do painel e só cita números que vieram dela. "
-                "Ele cobre receitas e despesas de 2023: órgãos, áreas, credores, impostos e "
-                "evolução mês a mês.</p></div>", unsafe_allow_html=True)
+                "Ele cobre receitas e despesas de 2023: órgãos, áreas e subáreas, tipos de gasto, "
+                "credores, impostos e evolução mês a mês.</p></div>", unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="agente-id"><span><span class="pulso"></span><b>Agente on-line</b></span>'
+                f'<span>Modelo: <b>{html.escape(os.getenv("LLM_MODEL", "LLM"))}</b></span>'
+                f'<span><b>{len(PASSOS)}</b> consultas à API que ele sabe usar</span>'
+                f'<span>Todo número é conferido fora da IA</span></div>', unsafe_allow_html=True)
             colunas = st.columns(3)
             for j, sugestao in enumerate(SUGESTOES):
                 if colunas[j % 3].button(sugestao, key=f"sug_{j}", use_container_width=True):
@@ -479,6 +594,9 @@ with aba_chat:
             with st.chat_message("user", avatar=AVATAR_PESSOA):
                 st.markdown(sem_latex(item["pergunta"]))
             mostrar_resposta(i, item)
+        if st.session_state.pop("rolar", False):
+            rolar_para_ultima_pergunta()
+        area_nova = st.container()  # a pergunta em andamento aparece aqui, acima da caixa de texto
 
         usadas = perguntas_hoje()
         if usadas is not None:
@@ -490,7 +608,7 @@ with aba_chat:
                 f"um modelo de IA externo.</div>", unsafe_allow_html=True)
 
         digitada = st.chat_input("Pergunte sobre o orçamento de 2023…",
-                                 max_chars=300)
+                                 max_chars=300, key="entrada")
         pergunta = digitada or st.session_state.pop("pendente", None)
         if pergunta:
             agora = time.time()
@@ -507,9 +625,14 @@ with aba_chat:
                            icon=":material/timer:")
             else:
                 st.session_state["ultima_pergunta_em"] = agora
-                with st.spinner("Consultando a API…"):
+                with area_nova:
+                    with st.chat_message("user", avatar=AVATAR_PESSOA):
+                        st.markdown(sem_latex(pergunta))
+                    rolar_para_ultima_pergunta()
                     item = perguntar(pergunta)
                 historico.append(item)
+                st.session_state["animar"] = len(historico) - 1
+                st.session_state["rolar"] = True
                 st.rerun()  # redesenha: conversa acima da caixa de texto, sem as sugestões
 
 # ------------------------------------------------------------------ aba: painel
@@ -591,7 +714,7 @@ with aba_sobre:
         <div class="etapas">
           <div class="etapa"><h4>Dados</h4><p>CSVs oficiais da prefeitura limpos em PySpark,
             carregados no PostgreSQL e modelados em estrela com dbt, com 86 testes de qualidade.</p></div>
-          <div class="etapa"><h4>API</h4><p>FastAPI com 10 endpoints tipados. As descrições foram
+          <div class="etapa"><h4>API</h4><p>FastAPI com 12 endpoints tipados. As descrições foram
             escritas para um LLM ler, e este painel usa a mesma API.</p></div>
           <div class="etapa"><h4>Agente</h4><p>Cada endpoint vira uma ferramenta. Um verificador
             fora do LLM confere se todo número da resposta veio da API.</p></div>

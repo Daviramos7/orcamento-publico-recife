@@ -106,3 +106,45 @@ def numeros_sem_suporte(resposta: str, resultados_tools: list[str], pergunta: st
         n.texto for n in extrair_numeros(resposta)
         if not eh_trivial(n) and not any(n.casa_com(alvo) for alvo in base)
     ]
+
+
+# --------------------------------------------------------------- números derivados
+# O prompt proíbe o LLM de fazer conta, mas ele às vezes faz (ex.: "21,79% do total"). Uma
+# conta CERTA feita sobre números da API não é alucinação, e uma conta errada é. Para separar
+# as duas, só aceitamos como operandos os números que a própria resposta cita E que vieram da
+# API: com poucos operandos, a chance de uma coincidência aleatória é desprezível (usar todos
+# os números das tools daria "explicação" para quase qualquer percentual).
+def _operacoes(a: NumeroCitado, b: NumeroCitado):
+    if b.valor != 0:
+        yield a.valor / b.valor * 100, f"{a.texto} ÷ {b.texto} × 100"
+        yield a.valor / b.valor, f"{a.texto} ÷ {b.texto}"
+    yield a.valor + b.valor, f"{a.texto} + {b.texto}"
+    yield a.valor - b.valor, f"{a.texto} − {b.texto}"
+
+
+def numeros_derivados(resposta: str, resultados_tools: list[str], pergunta: str = "") -> dict[str, str]:
+    """Números sem suporte direto que são uma conta (÷, ×100, +, −) entre dois números da
+    resposta que vieram da API. Devolve {número: conta que o explica}."""
+    base = numeros_das_tools(resultados_tools) | {n.valor for n in extrair_numeros(pergunta)}
+    citados = [n for n in extrair_numeros(resposta) if not eh_trivial(n)]
+    apoiados = [n for n in citados if any(n.casa_com(alvo) for alvo in base)]
+    derivados: dict[str, str] = {}
+    for n in citados:
+        if n in apoiados or n.texto in derivados:
+            continue
+        for a in apoiados:
+            for b in apoiados:
+                if a is b:
+                    continue
+                conta = next((txt for val, txt in _operacoes(a, b) if n.casa_com(val)), None)
+                if conta:
+                    derivados[n.texto] = conta
+                    break
+            if n.texto in derivados:
+                break
+    return derivados
+
+
+def tem_numero_de_dado(texto: str) -> bool:
+    """A resposta cita algum número que é dado (não só mês, posição ou ano)?"""
+    return any(not eh_trivial(n) for n in extrair_numeros(texto))

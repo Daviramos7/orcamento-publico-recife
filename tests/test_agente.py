@@ -5,7 +5,8 @@ from types import SimpleNamespace as NS
 
 from orcamento.agente.agente import FRASE_SEM_DADO, MAX_ITERACOES, Agente
 from orcamento.agente.ferramentas import gerar_ferramentas
-from orcamento.agente.verificacao import extrair_numeros, numeros_sem_suporte
+from orcamento.agente.verificacao import (extrair_numeros, numeros_derivados, numeros_sem_suporte,
+                                         tem_numero_de_dado)
 from orcamento.api.app import app
 
 
@@ -32,7 +33,8 @@ def test_ferramentas_geradas_do_openapi():
     assert set(fs) == {
         "metadados", "orgaos", "despesas_orgaos", "despesas_evolucao_mensal",
         "despesas_credores_ranking", "despesas_funcoes", "receitas_origens", "receitas_itens",
-        "receitas_evolucao_mensal", "comparativo_receita_despesa"}
+        "receitas_evolucao_mensal", "comparativo_receita_despesa",
+        "despesas_subfuncoes", "despesas_tipos_de_gasto"}
     params = fs["despesas_orgaos"].schema["function"]["parameters"]["properties"]
     assert params["medida"]["enum"] == ["empenhado", "liquidado", "pago"]
     assert params["medida"]["default"] == "liquidado"
@@ -194,3 +196,50 @@ def test_sem_max_tokens_o_parametro_nao_e_enviado():
     llm = LLMFalso([_msg(content="ok")])
     Agente(llm, "m", [], lambda n, a: (True, "{}")).perguntar("oi")
     assert "max_tokens" not in llm.recebido[0]
+
+
+# ------------------------------------------------------------ números derivados (2026-11-18)
+_SAUDE_DEZ = json.dumps({"orgao": "SAUDE", "valor": "247413487.31"})
+_TOTAL_DEZ = json.dumps({"mes": "2023-12", "valor": "1135636483.78"})
+
+
+def test_percentual_calculado_certo_e_derivado_nao_inventado():
+    # Caso real (2026-11-05): o agente calculou 21,79% mesmo proibido. A conta está certa.
+    texto = ("A Saúde gastou R$ 247.413.487,31 em dezembro, de R$ 1.135.636.483,78 da prefeitura, "
+             "ou seja 21,79% do total.")
+    assert numeros_sem_suporte(texto, [_SAUDE_DEZ, _TOTAL_DEZ]) == ["21,79"]   # estrito, como antes
+    derivados = numeros_derivados(texto, [_SAUDE_DEZ, _TOTAL_DEZ])
+    assert derivados == {"21,79": "247.413.487,31 ÷ 1.135.636.483,78 × 100"}
+
+
+def test_conta_errada_continua_sem_suporte():
+    texto = "R$ 247.413.487,31 de R$ 1.135.636.483,78, ou seja 25,00% do total."
+    assert numeros_derivados(texto, [_SAUDE_DEZ, _TOTAL_DEZ]) == {}
+
+
+def test_diferenca_e_soma_entre_numeros_citados():
+    a = json.dumps({"valores": ["400.00", "100.00"]})
+    assert numeros_derivados("Saúde R$ 400,00 e Educação R$ 100,00: diferença de R$ 300,00.", [a]) == {
+        "300,00": "400,00 − 100,00"}
+
+
+def test_operando_precisa_estar_citado_na_resposta():
+    # 300 = 400 - 100, mas o 100 não aparece na resposta: não dá pra conferir, fica sem suporte.
+    a = json.dumps({"valores": ["400.00", "100.00"]})
+    assert numeros_derivados("A Saúde gastou R$ 400,00, R$ 300,00 a mais.", [a]) == {}
+
+
+def test_tem_numero_de_dado_ignora_mes_e_posicao():
+    assert not tem_numero_de_dado("Não tenho esse dado: não consegui concluir a consulta em 6 passos.")
+    assert tem_numero_de_dado("Foram R$ 660.545.540,80.")
+
+
+def test_ao_chamar_recebe_cada_consulta_na_ordem():
+    llm = LLMFalso([
+        _msg(tool_calls=[_tool_call("c1", "orgaos", {"busca": "saude"})]),
+        _msg(tool_calls=[_tool_call("c2", "despesas_orgaos", {"limite": 1})]),
+        _msg(content="ok"),
+    ])
+    vistos = []
+    Agente(llm, "m", [], lambda n, a: (True, "{}")).perguntar("x", ao_chamar=lambda c: vistos.append(c.ferramenta))
+    assert vistos == ["orgaos", "despesas_orgaos"]

@@ -41,7 +41,7 @@ Portal de Dados Abertos (CSV despesas + receitas 2023)
         dim_credor · dim_classif_economica · dim_classif_funcional · dim_classif_receita
         │
         ▼
- FastAPI  10 endpoints tipados (Pydantic), com descrições escritas para o LLM
+ FastAPI  12 endpoints tipados (Pydantic), com descrições escritas para o LLM
         │  OpenAPI
         ▼
  Agente  tools geradas do OpenAPI · loop de tool calling no SDK openai · temperatura 0
@@ -155,6 +155,8 @@ Visitante ─► Streamlit Community Cloud ── app + API FastAPI + agente (no
 | `GET /despesas/evolucao-mensal` | mês a mês com variação (`lag()`) e acumulado (`sum() over`) |
 | `GET /despesas/credores/ranking` | maiores credores, consolidados por nome |
 | `GET /despesas/funcoes` | gasto por área (Saúde, Educação, Urbanismo…) |
+| `GET /despesas/subfuncoes` | o detalhe da área (Atenção Básica, Ensino Fundamental, Comunicação Social…), com filtro por função |
+| `GET /despesas/tipos-de-gasto?busca=` | **com o que** se gastou (publicidade, combustível, aluguel…), com `total_filtrado` já somado |
 | `GET /receitas/origens` | arrecadado × previsto por origem e % de execução |
 | `GET /receitas/itens?busca=IPTU` | receita específica, com siglas (IPTU, ISS, FPM, FUNDEB…) |
 | `GET /receitas/evolucao-mensal` | arrecadação mês a mês com variação e acumulado |

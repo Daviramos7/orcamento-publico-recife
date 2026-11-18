@@ -106,6 +106,74 @@ def totais_por_funcao(medida: Medida) -> sql.Composed:
     """).format(col=_col(medida))
 
 
+def totais_por_subfuncao(medida: Medida) -> sql.Composed:
+    """Subfunção = o detalhe da função (ex.: Saúde > Atenção Básica; Administração >
+    Comunicação Social). O código da subfunção tem um nome só, mas a mesma subfunção aparece
+    em várias funções, então somamos por subfunção (opcionalmente dentro de uma função)."""
+    return sql.SQL("""
+        with por_subfuncao as (
+            select fc.subfuncao_codigo, fc.subfuncao_nome, sum(f.{col}) as valor
+            from marts.fato_despesa_movimento f
+            join marts.dim_classif_funcional fc using (sk_classif_funcional)
+            join marts.dim_mes m using (sk_mes)
+            where m.mes between %(mes_inicio)s and %(mes_fim)s
+              and (%(ano)s::int is null or m.ano = %(ano)s)
+              and (%(funcao_codigo)s::text is null or fc.funcao_codigo = %(funcao_codigo)s)
+            group by 1, 2
+        )
+        , ranqueado as (
+            select
+                rank() over (order by valor desc)                       as posicao,
+                subfuncao_codigo, subfuncao_nome, valor,
+                round(100 * valor / nullif(sum(valor) over (), 0), 2)   as participacao_pct,
+                sum(valor) over ()                                      as total_geral
+            from por_subfuncao
+        )
+        select * from ranqueado
+        where %(busca)s::text is null
+           or translate(lower(subfuncao_nome), 'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%%' || %(busca)s || '%%'
+        order by valor desc
+    """).format(col=_col(medida))
+
+
+NIVEIS_TIPO_GASTO = {
+    # O significado de elemento/subelemento depende do caminho inteiro de códigos (ver
+    # dim_classif_economica.sql), então agrupamos pelo NOME, que é o que a pergunta usa.
+    "elemento": [sql.SQL("e.elemento_nome"), sql.SQL("null::text")],
+    "subelemento": [sql.SQL("e.elemento_nome"), sql.SQL("e.subelemento_nome")],
+}
+
+
+def totais_por_tipo_gasto(medida: Medida, nivel: str) -> sql.Composed:
+    elemento, subelemento = NIVEIS_TIPO_GASTO[nivel]
+    return sql.SQL("""
+        with por_tipo as (
+            select {elemento} as elemento_nome, {subelemento} as subelemento_nome, sum(f.{col}) as valor
+            from marts.fato_despesa_movimento f
+            join marts.dim_classif_economica e using (sk_classif_economica)
+            join marts.dim_unidade u using (sk_unidade)
+            join marts.dim_mes m using (sk_mes)
+            where m.mes between %(mes_inicio)s and %(mes_fim)s
+              and (%(ano)s::int is null or m.ano = %(ano)s)
+              and (%(orgao_codigo)s::text is null or u.orgao_codigo = %(orgao_codigo)s)
+            group by 1, 2
+        )
+        , ranqueado as (
+            select
+                rank() over (order by valor desc)                       as posicao,
+                elemento_nome, subelemento_nome, valor,
+                round(100 * valor / nullif(sum(valor) over (), 0), 2)   as participacao_pct,
+                sum(valor) over ()                                      as total_geral
+            from por_tipo
+        )
+        select * from ranqueado
+        where %(busca)s::text is null
+           or translate(lower(coalesce(subelemento_nome, '') || ' ' || elemento_nome),
+                        'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%%' || %(busca)s || '%%'
+        order by valor desc
+    """).format(col=_col(medida), elemento=elemento, subelemento=subelemento)
+
+
 ORGAOS = """
     select distinct orgao_codigo, orgao_nome from marts.dim_unidade order by orgao_codigo
 """

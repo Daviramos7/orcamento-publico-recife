@@ -234,3 +234,49 @@
   pergunta: Quanto a prefeitura gastou no dia 15 de março de 2023?
   tipo: recusa
   ferramentas_aceitas: [metadados]
+
+# ------------------------------------------------------------------ subfunção e tipo de gasto
+# Adicionados em 2026-11-18 com os endpoints despesas_subfuncoes e despesas_tipos_de_gasto.
+# Origem: a pergunta real "qual foi o gasto em publicidade" (13/11), em que o agente rodou 6
+# rodadas em círculo porque a API ainda não tinha esse recorte. Rodadas com estes casos têm
+# 35 perguntas; as anteriores, 30. Ver evals/README.md antes de comparar.
+- id: desp_publicidade
+  pergunta: Quanto a prefeitura gastou com publicidade em 2023?
+  tipo: numero
+  referencia: {ferramenta: despesas_tipos_de_gasto, argumentos: {"busca": "publicidade"}}
+  ferramentas_aceitas: [despesas_tipos_de_gasto]
+  gabarito_sql: >
+    select sum(valor_liquidado) from raw.despesas
+    where translate(lower(subelemento_nome), 'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%publicidade%'
+
+- id: desp_combustivel
+  pergunta: Quanto a prefeitura gastou com combustível?
+  tipo: numero
+  referencia: {ferramenta: despesas_tipos_de_gasto, argumentos: {"busca": "combustive"}}
+  ferramentas_aceitas: [despesas_tipos_de_gasto]
+  gabarito_sql: >
+    select sum(valor_liquidado) from raw.despesas
+    where translate(lower(subelemento_nome), 'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%combustive%'
+
+- id: desp_subfuncao_atencao_basica
+  pergunta: Quanto foi gasto com atenção básica em saúde?
+  tipo: numero
+  referencia: {ferramenta: despesas_subfuncoes, argumentos: {"busca": "atencao basica"}}
+  ferramentas_aceitas: [despesas_subfuncoes]
+  gabarito_sql: select sum(valor_liquidado) from raw.despesas where subfuncao_codigo = '301'
+
+- id: desp_subfuncao_comunicacao
+  pergunta: Quanto a prefeitura gastou com comunicação social?
+  tipo: numero
+  referencia: {ferramenta: despesas_subfuncoes, argumentos: {"busca": "comunicacao social"}}
+  ferramentas_aceitas: [despesas_subfuncoes]
+  gabarito_sql: select sum(valor_liquidado) from raw.despesas where subfuncao_codigo = '131'
+
+- id: desp_saude_maior_subfuncao
+  pergunta: Dentro da saúde, qual subárea recebeu mais dinheiro?
+  tipo: texto
+  referencia: {ferramenta: despesas_subfuncoes, argumentos: {"funcao_codigo": "10"}}
+  ferramentas_aceitas: [despesas_subfuncoes]
+  gabarito_sql: >
+    select subfuncao_nome from raw.despesas where funcao_codigo = '10'
+    group by 1 order by sum(valor_liquidado) desc limit 1

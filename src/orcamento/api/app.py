@@ -4,8 +4,9 @@ Regra de ouro: as descrições de endpoint e parâmetro são o "manual" do agent
 Elas dizem o que cada rota responde, em que unidade e o que ela NÃO responde.
 """
 import unicodedata
+from decimal import Decimal
 from collections.abc import Iterator
-from typing import Annotated
+from typing import Annotated, Literal
 
 import psycopg
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -26,12 +27,14 @@ from orcamento.api.modelos import (
     RankingCredores,
     TotaisPorFuncao,
     TotaisPorOrgao,
+    TotaisPorSubfuncao,
+    TotaisPorTipoGasto,
 )
 from orcamento.config import dsn
 
 app = FastAPI(
     title="Receitas e Despesas Públicas do Recife",
-    version="0.3.0",
+    version="0.4.0",
     description=(
         "Receitas e despesas orçamentárias da Prefeitura do Recife (Portal de Dados Abertos). "
         "Valores em reais (R$), agregados por mês. Consulte /metadados para saber "
@@ -239,6 +242,100 @@ def despesas_por_funcao(
     total = linhas[0]["total_geral"] if linhas else 0
     return TotaisPorFuncao(anos_dos_dados=[ano] if ano else _anos(conn), medida=medida, mes_inicio=mes_inicio, mes_fim=mes_fim,
                            total_geral=total, funcoes=linhas)
+
+
+BuscaQ = Annotated[str | None, Query(
+    description="Trecho do nome, sem precisar de acento (ex. 'publicidade', 'combustivel'). "
+                "Com busca, o campo total_filtrado traz a soma dos itens encontrados.")]
+
+
+def _total_filtrado(linhas: list[dict], busca: str | None):
+    # A soma é feita aqui, na API, para o agente nunca precisar fazer conta.
+    return sum((r["valor"] for r in linhas), Decimal(0)) if busca else None
+
+
+def _total_geral(conn: psycopg.Connection, linhas: list[dict], consulta, params: dict):
+    if linhas:
+        return linhas[0]["total_geral"]
+    # Busca sem resultado: o total do recorte continua existindo; recalcula sem a busca.
+    sem_busca = conn.execute(consulta, {**params, "busca": None}).fetchall()
+    return sem_busca[0]["total_geral"] if sem_busca else None
+
+
+@app.get("/despesas/subfuncoes", response_model=TotaisPorSubfuncao,
+         summary="Despesa por subfunção (o detalhe da área: Atenção Básica, Comunicação Social...)")
+def despesas_por_subfuncao(
+    conn: Conn,
+    medida: MedidaQ = Medida.liquidado,
+    mes_inicio: MesInicio = 1,
+    mes_fim: MesFim = 12,
+    funcao_codigo: Annotated[str | None, Query(
+        description="Código da função para ver só as subfunções dela (ex. '10' = Saúde). "
+                    "Descubra o código em despesas_funcoes. Omita para todas.")] = None,
+    busca: BuscaQ = None,
+    limite: Annotated[int, Query(ge=1, le=100, description="Quantas subfunções retornar")] = 20,
+    ano: AnoQ = None,
+) -> TotaisPorSubfuncao:
+    """Subfunção é o detalhe da função de governo. Responde: 'quanto foi gasto com atenção
+    básica / ensino fundamental / iluminação pública / comunicação social (publicidade
+    institucional)', 'dentro da saúde, para onde foi o dinheiro'. Para a área inteira use
+    despesas_funcoes; para o TIPO do gasto (combustível, aluguel, serviço de publicidade)
+    use despesas_tipos_de_gasto."""
+    _validar_ano(conn, ano)
+    _validar_periodo(mes_inicio, mes_fim)
+    funcao_nome = None
+    if funcao_codigo is not None:
+        linha = conn.execute("select funcao_nome from marts.dim_classif_funcional "
+                             "where funcao_codigo = %s limit 1", (funcao_codigo,)).fetchone()
+        if linha is None:
+            raise HTTPException(404, f"Função '{funcao_codigo}' não existe. "
+                                     "Use despesas_funcoes para ver os códigos.")
+        funcao_nome = linha["funcao_nome"]
+    consulta = consultas.totais_por_subfuncao(medida)
+    params = {"mes_inicio": mes_inicio, "mes_fim": mes_fim, "ano": ano,
+              "funcao_codigo": funcao_codigo, "busca": _sem_acento(busca) if busca else None}
+    linhas = conn.execute(consulta, params).fetchall()
+    return TotaisPorSubfuncao(
+        anos_dos_dados=[ano] if ano else _anos(conn), medida=medida, mes_inicio=mes_inicio,
+        mes_fim=mes_fim, funcao_codigo=funcao_codigo, funcao_nome=funcao_nome,
+        total_geral=_total_geral(conn, linhas, consulta, params),
+        total_filtrado=_total_filtrado(linhas, busca), subfuncoes=linhas[:limite])
+
+
+@app.get("/despesas/tipos-de-gasto", response_model=TotaisPorTipoGasto,
+         summary="Despesa pelo TIPO do gasto (natureza: publicidade, combustível, aluguel...)")
+def despesas_tipos_de_gasto(
+    conn: Conn,
+    medida: MedidaQ = Medida.liquidado,
+    mes_inicio: MesInicio = 1,
+    mes_fim: MesFim = 12,
+    nivel: Annotated[Literal["elemento", "subelemento"], Query(
+        description="'elemento' = grupos amplos (ex. Material de Consumo, Outros Serviços de "
+                    "Terceiros - PJ); 'subelemento' = o item (ex. Combustíveis, Serviços de "
+                    "Publicidade e Propaganda). Para perguntas sobre um item específico, use "
+                    "'subelemento' com busca.")] = "subelemento",
+    busca: BuscaQ = None,
+    orgao_codigo: OrgaoQ = None,
+    limite: Annotated[int, Query(ge=1, le=100, description="Quantos itens retornar")] = 20,
+    ano: AnoQ = None,
+) -> TotaisPorTipoGasto:
+    """Classificação econômica (natureza da despesa): COM O QUE o dinheiro foi gasto.
+    Responde: 'quanto foi gasto com publicidade / combustível / aluguel / energia elétrica',
+    'em que a prefeitura mais gasta', 'quanto o órgão X gastou com diárias'. Com busca, use
+    total_filtrado como resposta (ex.: busca 'publicidade' soma todos os itens de publicidade).
+    Para a ÁREA de governo (saúde, educação) use despesas_funcoes/despesas_subfuncoes."""
+    _validar_ano(conn, ano)
+    _validar_periodo(mes_inicio, mes_fim)
+    orgao_nome = _nome_orgao(conn, orgao_codigo)
+    consulta = consultas.totais_por_tipo_gasto(medida, nivel)
+    params = {"mes_inicio": mes_inicio, "mes_fim": mes_fim, "ano": ano,
+              "orgao_codigo": orgao_codigo, "busca": _sem_acento(busca) if busca else None}
+    linhas = conn.execute(consulta, params).fetchall()
+    return TotaisPorTipoGasto(
+        anos_dos_dados=[ano] if ano else _anos(conn), medida=medida, nivel=nivel,
+        mes_inicio=mes_inicio, mes_fim=mes_fim, orgao_codigo=orgao_codigo, orgao_nome=orgao_nome,
+        total_geral=_total_geral(conn, linhas, consulta, params),
+        total_filtrado=_total_filtrado(linhas, busca), itens=linhas[:limite])
 
 
 # --------------------------------------------------------------------- receitas

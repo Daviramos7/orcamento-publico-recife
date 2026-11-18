@@ -30,6 +30,9 @@ class ResultadoCaso:
     guardrail: str | None = None         # o código sobrescreveu a resposta do LLM?
     acerto_llm: bool | None = None       # acerto da resposta ORIGINAL do LLM (sem guardrail)
     erro: str | None = None
+    # Desde 2026-11-18. Informativo: NÃO muda acerto nem numeros_sem_suporte (que segue estrito,
+    # para as rodadas antigas continuarem comparáveis). Ver verificacao.numeros_derivados.
+    numeros_derivados: dict | None = None
 
     def dict(self) -> dict:
         return asdict(self)
@@ -74,6 +77,7 @@ def avaliar(caso: dict, resp: RespostaAgente, esperado) -> ResultadoCaso:
         chamadas=[{"ferramenta": c.ferramenta, "argumentos": c.argumentos, "ok": c.ok,
                    "resultado_inicio": c.resultado[:300]} for c in resp.chamadas],
         guardrail=resp.guardrail, acerto_llm=acerto_llm,
+        numeros_derivados=resp.numeros_derivados or None,
     )
 
 

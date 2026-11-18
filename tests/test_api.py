@@ -121,8 +121,8 @@ def test_comparativo_exclui_intra_por_padrao(cliente):
 
 @pytest.mark.parametrize("rota", [
     "/despesas/orgaos", "/despesas/evolucao-mensal", "/despesas/credores/ranking",
-    "/despesas/funcoes", "/receitas/origens", "/receitas/evolucao-mensal",
-    "/comparativo/receita-despesa"])
+    "/despesas/funcoes", "/despesas/subfuncoes", "/despesas/tipos-de-gasto",
+    "/receitas/origens", "/receitas/evolucao-mensal", "/comparativo/receita-despesa"])
 def test_ano_inexistente_retorna_404_explicando(cliente, rota):
     r = cliente.get(rota, params={"ano": 2022})
     assert r.status_code == 404
@@ -145,8 +145,8 @@ def test_ranking_credores_busca_por_nome_sem_acento(cliente):
 
 @pytest.mark.parametrize("rota", [
     "/despesas/orgaos", "/despesas/evolucao-mensal", "/despesas/credores/ranking",
-    "/despesas/funcoes", "/receitas/origens", "/receitas/evolucao-mensal",
-    "/comparativo/receita-despesa"])
+    "/despesas/funcoes", "/despesas/subfuncoes", "/despesas/tipos-de-gasto",
+    "/receitas/origens", "/receitas/evolucao-mensal", "/comparativo/receita-despesa"])
 def test_toda_resposta_diz_de_que_ano_sao_os_dados(cliente, rota):
     assert cliente.get(rota).json()["anos_dos_dados"] == [2023]
 
@@ -156,3 +156,51 @@ def test_comparativo_avisa_que_nao_sao_totais(cliente):
     assert "SEM" in sem["observacao"] and "não são os totais" in sem["observacao"]
     com = cliente.get("/comparativo/receita-despesa", params={"excluir_intraorcamentarias": False}).json()
     assert "COM" in com["observacao"]
+
+
+# --------------------------------------------------------------- subfunção e tipo de gasto
+# Fixture (liquidado): subfunção 131 = Saúde fev 300 + Educação 100 = 400 | 301 = Saúde jan 100.
+# Tipo de gasto: Serv. publicidade 350 (100 + 300 - 50) | Publicidade oficial 50 | Combustíveis 100.
+def test_subfuncoes_soma_a_mesma_subfuncao_de_funcoes_diferentes(cliente):
+    r = cliente.get("/despesas/subfuncoes").json()
+    assert [(x["subfuncao_codigo"], D(x["valor"])) for x in r["subfuncoes"]] == [("131", 400), ("301", 100)]
+    assert D(r["total_geral"]) == 500 and r["total_filtrado"] is None
+    assert D(r["subfuncoes"][0]["participacao_pct"]) == 80
+
+
+def test_subfuncoes_dentro_de_uma_funcao_e_funcao_inexistente(cliente):
+    r = cliente.get("/despesas/subfuncoes", params={"funcao_codigo": "10"}).json()
+    assert r["funcao_nome"] == "SAÚDE"
+    assert [(x["subfuncao_nome"], D(x["valor"])) for x in r["subfuncoes"]] == [
+        ("COMUNICAÇÃO SOCIAL", 300), ("ATENÇÃO BÁSICA", 100)]
+    assert cliente.get("/despesas/subfuncoes", params={"funcao_codigo": "99"}).status_code == 404
+
+
+def test_subfuncoes_busca_sem_acento_traz_total_filtrado(cliente):
+    r = cliente.get("/despesas/subfuncoes", params={"busca": "comunicacao"}).json()
+    assert [x["subfuncao_codigo"] for x in r["subfuncoes"]] == ["131"]
+    assert D(r["total_filtrado"]) == 400 and D(r["total_geral"]) == 500
+
+
+def test_tipos_de_gasto_por_subelemento_e_elemento(cliente):
+    r = cliente.get("/despesas/tipos-de-gasto").json()
+    assert [(x["subelemento_nome"], D(x["valor"])) for x in r["itens"]] == [
+        ("SERVIÇOS DE PUBLICIDADE E PROPAGANDA", 350), ("COMBUSTÍVEIS", 100), ("PUBLICIDADE OFICIAL/LEGAL", 50)]
+    e = cliente.get("/despesas/tipos-de-gasto", params={"nivel": "elemento"}).json()
+    assert [(x["elemento_nome"], x["subelemento_nome"], D(x["valor"])) for x in e["itens"]] == [
+        ("OUTROS SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA", None, 400), ("MATERIAL DE CONSUMO", None, 100)]
+
+
+def test_tipos_de_gasto_busca_soma_todos_os_itens_do_tema(cliente):
+    r = cliente.get("/despesas/tipos-de-gasto", params={"busca": "publicidade"}).json()
+    assert len(r["itens"]) == 2 and D(r["total_filtrado"]) == 400 and D(r["total_geral"]) == 500
+    vazio = cliente.get("/despesas/tipos-de-gasto", params={"busca": "helicoptero"}).json()
+    assert vazio["itens"] == [] and D(vazio["total_filtrado"]) == 0 and D(vazio["total_geral"]) == 500
+
+
+def test_tipos_de_gasto_por_orgao_e_nivel_invalido(cliente):
+    r = cliente.get("/despesas/tipos-de-gasto", params={"orgao_codigo": "14"}).json()
+    assert r["orgao_nome"] == "SECRETARIA DE EDUCAÇÃO"
+    assert [(x["subelemento_nome"], D(x["valor"])) for x in r["itens"]] == [
+        ("COMBUSTÍVEIS", 100), ("PUBLICIDADE OFICIAL/LEGAL", 50), ("SERVIÇOS DE PUBLICIDADE E PROPAGANDA", -50)]
+    assert cliente.get("/despesas/tipos-de-gasto", params={"nivel": "acao"}).status_code == 422
