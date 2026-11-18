@@ -8,8 +8,9 @@ Pipeline de dados (PySpark + dbt + PostgreSQL), uma **API FastAPI** desenhada pa
 um LLM e um **agente com tool calling** que responde perguntas em português sobre o orçamento do
 Recife em 2023. O agente cita só números que vieram da API, e isso é **medido por evals**.
 
-> **Status:** funcionando de ponta a ponta. Em 30 casos de avaliação: **Gemini Flash-Lite (nuvem,
-> grátis) 100%** e **qwen2.5:7b (local) 96,7%**, sem nenhum número inventado.
+> **Status:** funcionando de ponta a ponta. Em 35 casos de avaliação (rodada final, 1 repetição):
+> **Gemini Flash-Lite (nuvem, grátis) 97,1%** e **qwen2.5:7b (local) 100%**, sem nenhum número
+> inventado.
 > [Detalhes e limites](#-resultados-dos-evals).
 
 ---
@@ -48,7 +49,7 @@ Portal de Dados Abertos (CSV despesas + receitas 2023)
         │        ├─► Ollama (local) ou Gemini / Groq / OpenAI (por variável de ambiente)
         │        └─► checagem de grounding: todo número citado precisa estar na saída de uma tool
         ▼
- Evals (30 casos, gabarito via SQL direto no raw)   ·   Feedback 👍/👎 → app.interacoes
+ Evals (35 casos, gabarito via SQL direto no raw)   ·   Feedback 👍/👎 → app.interacoes
 ```
 
 ## 🚀 Como rodar
@@ -57,7 +58,7 @@ Portal de Dados Abertos (CSV despesas + receitas 2023)
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/), instalado e **aberto**.
 - Para o agente, uma das opções:
-  - **[Ollama](https://ollama.com/download)** (grátis, local; GPU recomendada): `ollama pull qwen2.5:7b`
+  - **[Ollama](https://ollama.com/download)** (grátis, local; GPU recomendada): `ollama pull qwen2.5:7b` e depois `ollama create qwen2.5-7b-8k -f deploy/ollama/Modelfile` (janela de 8k; ver o comentário no arquivo)
   - **Google Gemini** (grátis, na nuvem, sem GPU, sem cartão): chave em [aistudio.google.com](https://aistudio.google.com)
   - **Groq** (grátis, na nuvem): chave em [console.groq.com](https://console.groq.com)
 
@@ -93,7 +94,7 @@ uns 2 a 3 minutos. Está pronto quando aparecer `Uvicorn running on http://0.0.0
 | Quero… | Comando |
 |---|---|
 | Conversar com o agente (e dar 👍/👎) | `docker compose run --rm --build agente` |
-| Rodar os 30 casos de eval | `docker compose run --rm --build --no-deps evals` |
+| Rodar os 35 casos de eval | `docker compose run --rm --build --no-deps evals` |
 | Medir variância (3 rodadas) | `docker compose run --rm --build --no-deps evals python evals/rodar.py --repeticoes 3` |
 | Rodar os testes | `docker compose run --rm --build tests` |
 | Exportar os 👎 para candidatos de eval | `docker compose run --rm --no-deps agente python -m orcamento.feedback` |
@@ -182,34 +183,38 @@ Medidas de despesa são whitelisted (`empenhado | liquidado | pago`) e injetadas
 
 ## 📏 Evals
 
-[`evals/casos.yaml`](evals/casos.yaml) tem **30 casos**: 17 de despesa, 9 de receita/comparativo
+[`evals/casos.yaml`](evals/casos.yaml) tem **35 casos**: 22 de despesa (5 de subfunção e tipo de gasto), 9 de receita/comparativo
 e **4 que o agente deve recusar** (outro ano, bairro, salário individual, valor por dia).
 
 - **O gabarito é SQL direto em `raw.*`**, sem passar pela API nem pelo dbt. Se a API tiver bug,
   o gabarito não herda o bug. Foi assim que um eval encontrou o problema dos credores com vários
   códigos (ver [`docs/qualidade.md`](docs/qualidade.md)).
 - **Teste de cobertura sem LLM:** pra cada caso respondível, uma chamada de referência prova que
-  a resposta está na saída da API (25/25). Então, se um eval falha, o problema é do agente.
+  a resposta está na saída da API (30/30). Então, se um eval falha, o problema é do agente.
 - **Métricas por caso:** acerto, tool correta, **números citados sem suporte** (detector de
   alucinação) e iterações.
 
 ## 📊 Resultados dos evals
 
-Mesmos 30 casos, temperatura 0, mesma API (versão atual):
+Mesmos 35 casos, temperatura 0, mesma API (versão atual), prompt padrão `v1`:
 
 | Modelo | Onde roda | Rep. | Acerto | LLM sem guardrail | Tool correta | Nº sem suporte |
 |---|---|---:|---:|---:|---:|---:|
-| `gemini-3.5-flash-lite` | nuvem, plano gratuito | 1 | **100%** | **100%** | 100% | 0 |
-| `qwen2.5:7b` | local (Ollama, RTX 3060) | 1 | **96,7%** | 93,3% | 96,7% | 0 |
+| `gemini-3.5-flash-lite` | nuvem, plano gratuito (é o do app) | 1 | **97,1%** | 97,1% | 100% | 0 |
+| `qwen2.5-7b-8k` | local (Ollama, RTX 3060, janela de 8k) | 1 | **100%** | 97,1% | 100% | 0 |
 
-Em nenhuma rodada o agente citou número que não veio da API.
+Em nenhuma rodada o agente citou número que não veio da API. O erro do Gemini (valor pago pela
+Educação) passou numa rodada anterior com a mesma API: é variação do modelo, e mostra que
+`despesas_orgaos` precisa de filtro por órgão. Os 5 casos novos (publicidade, combustível,
+subfunções) entraram com os endpoints de subfunção e tipo de gasto; um deles achou um bug de
+busca no plural, já corrigido.
 
 O caminho até aqui inclui uma **regressão para 76,7%** (causada por expor o parâmetro `ano` nas
 tools), um A/B de prompt, um guardrail determinístico e um **trade-off aceito**: a correção que
 levou o Gemini a 100% custou 1 caso no qwen. Está tudo em [`evals/README.md`](evals/README.md),
 com o JSON de cada rodada em `evals/resultados/`.
 
-> Esses números valem para **estes 30 casos**, escritos pelo autor, e várias correções foram
+> Esses números valem para **estes 35 casos**, escritos pelo autor, e várias correções foram
 > feitas depois de ver o erro. Não é uma medida de confiabilidade geral. As rodadas finais têm
 > uma repetição só.
 

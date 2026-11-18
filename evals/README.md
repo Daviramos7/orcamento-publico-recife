@@ -58,10 +58,50 @@ O conjunto de casos é **o mesmo** em todas as rodadas, com uma exceção regist
 - Em `20261101-1512_*` houve um HTTP 503 de sobrecarga do `gemini-3.8-flash`. O arquivo foi
   descartado por ser falha do provedor, não avaliação. Por isso o modelo usado é o Flash-Lite.
 
+### Subfunção e tipo de gasto (35 casos, 2026-11-18)
+
+Origem: a pergunta real "qual foi o gasto em publicidade" (13/11) fez o agente rodar 6 rodadas em
+círculo e desistir no limite, porque a API não tinha esse recorte. Entraram os endpoints
+`despesas_subfuncoes` e `despesas_tipos_de_gasto` e **5 casos novos** (publicidade, combustível,
+atenção básica, comunicação social e a maior subfunção da saúde). Daqui pra frente as rodadas têm
+35 casos; as colunas "30 orig." e "5 novos" permitem comparar com as anteriores.
+
+| # | Modelo | Mudança | Prompt | Acerto | Sem guardrail | 30 orig. | 5 novos | Sem suporte | Arquivo |
+|---|---|---|---|---:|---:|---:|---:|---:|---|
+| 9 | gemini-3.5-flash-lite | endpoints novos | v1 | 97,1% | 97,1% | 30 | 4 | 0 | `20261118-1557_*` |
+| 10 | gemini-3.5-flash-lite | + busca tolerante a plural | v3 | 100% | 100% | 30 | 5 | 0 | `20261118-1611_*` |
+| 11 | qwen2.5-7b-8k | mesma API da rodada 10 | v1 | **100%** | 97,1% | 30 | 5 | 0 | `20261118-1617_*` |
+| 12 | qwen2.5-7b-8k | mesma API da rodada 10 | v3 | 94,3% | 91,4% | 28 | 5 | 0 | `20261118-1618_*` |
+| 13 | gemini-3.5-flash-lite | mesma API da rodada 10 (**configuração do app**) | v1 | **97,1%** | 97,1% | 29 | 5 | 0 | `20261118-1631_*` |
+
+Todas com 1 repetição.
+
+- **9:** o único erro foi um **bug da API achado pelo eval**: o agente buscou "combustivel" e a
+  busca só casava com "TICKET COMBUSTÍVEL", porque os outros itens se chamam "COMBUSTÍVEIS"
+  (o plural troca "el" por "eis"). A busca passou a usar o radical de cada palavra (teste
+  `test_busca_aceita_plural_e_varias_palavras`).
+- **10 × 9 não é um A/B do prompt:** entre as duas, a API mudou. A comparação limpa é 11 × 12.
+- **11 × 12:** na mesma API, o prompt v3 (ferramentas novas descritas + "pare depois de duas
+  tentativas") **piorou** o qwen: ele desistiu da Educação e da Caixa depois de UMA chamada
+  malformada. O padrão continua `v1`; o v3 fica no código como experimento registrado.
+- **qwen com janela de 8k:** com 12 ferramentas o prompt passou de ~2.900 para ~4.400 tokens, e
+  o Ollama cortava o começo da conversa (`truncating input prompt limit=2050 prompt=4387` no
+  `server.log`). O qwen perdia o resultado das tools e repetia `despesas_orgaos` até o limite.
+  A rodada com o modelo cortado foi interrompida e descartada (falha de infraestrutura, não
+  avaliação). Correção: [`deploy/ollama/Modelfile`](../deploy/ollama/Modelfile) com `num_ctx 8192`.
+- **13:** o erro foi `desp_orgao_educacao_pago`. O Gemini chamou `despesas_orgaos` com `limite: 1`
+  (só o maior órgão) e desistiu. O mesmo caso passou na rodada 9, então é variação do modelo, mas
+  aponta uma fraqueza real: `despesas_orgaos` não filtra por órgão. Próximo passo registrado.
+- **Números derivados:** desde esta versão o relatório guarda `numeros_derivados` (conta certa
+  feita sobre números da API, ex. um percentual). É informativo: `numeros_sem_suporte` e o
+  acerto continuam estritos, como nas rodadas antigas.
+
 ### Limites destes números
 
-- As rodadas 6 a 8 têm **uma repetição só**. O Gemini na nuvem pode variar mais que o modelo
-  local, e as 3 repetições ficaram pendentes por causa da cota diária gratuita.
+- As rodadas 6 a 13 têm **uma repetição só**. O Gemini varia entre rodadas (o caso da Educação
+  passou na 9 e falhou na 13 com a mesma API). As 3 repetições seguem pendentes: no plano
+  gratuito, cada rodada de 35 casos levou de 11 minutos a mais de 1 hora por causa do limite
+  de requisições por minuto.
 - 30 casos escritos pelo próprio autor. O guardrail foi criado **depois** de ver o caso de 2022
   falhar, então esse caso não mede generalização. Casos novos devem vir do loop de feedback
   (`python -m orcamento.feedback`).

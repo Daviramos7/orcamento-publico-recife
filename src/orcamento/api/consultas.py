@@ -130,8 +130,9 @@ def totais_por_subfuncao(medida: Medida) -> sql.Composed:
             from por_subfuncao
         )
         select * from ranqueado
-        where %(busca)s::text is null
-           or translate(lower(subfuncao_nome), 'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%%' || %(busca)s || '%%'
+        where %(radicais)s::text[] is null or not exists (
+            select 1 from unnest(%(radicais)s::text[]) r
+            where translate(lower(subfuncao_nome), 'áàâãéêíóôõúç', 'aaaaeeiooouc') not like '%%' || r || '%%')
         order by valor desc
     """).format(col=_col(medida))
 
@@ -167,9 +168,10 @@ def totais_por_tipo_gasto(medida: Medida, nivel: str) -> sql.Composed:
             from por_tipo
         )
         select * from ranqueado
-        where %(busca)s::text is null
-           or translate(lower(coalesce(subelemento_nome, '') || ' ' || elemento_nome),
-                        'áàâãéêíóôõúç', 'aaaaeeiooouc') like '%%' || %(busca)s || '%%'
+        where %(radicais)s::text[] is null or not exists (
+            select 1 from unnest(%(radicais)s::text[]) r
+            where translate(lower(coalesce(subelemento_nome, '') || ' ' || elemento_nome),
+                            'áàâãéêíóôõúç', 'aaaaeeiooouc') not like '%%' || r || '%%')
         order by valor desc
     """).format(col=_col(medida), elemento=elemento, subelemento=subelemento)
 

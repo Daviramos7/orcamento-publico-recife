@@ -249,6 +249,23 @@ BuscaQ = Annotated[str | None, Query(
                 "Com busca, o campo total_filtrado traz a soma dos itens encontrados.")]
 
 
+def _radicais(busca: str | None) -> list[str] | None:
+    """Busca tolerante a plural: cada palavra vira um radical e TODOS precisam aparecer.
+
+    Evals 2026-11-18: 'combustivel' não achava 'COMBUSTÍVEIS' (o plural troca 'el' por
+    'eis'). Cortar o fim da palavra resolve os plurais comuns: combustível/combustíveis,
+    aluguel/aluguéis, material/materiais, diária/diárias. Palavras curtas (de, da, com) saem.
+    """
+    if not busca:
+        return None
+    radicais = []
+    for palavra in _sem_acento(busca).split():
+        if len(palavra) <= 3:
+            continue
+        radicais.append(palavra[:-2] if len(palavra) > 5 else palavra[:-1] if len(palavra) > 4 else palavra)
+    return radicais or None
+
+
 def _total_filtrado(linhas: list[dict], busca: str | None):
     # A soma é feita aqui, na API, para o agente nunca precisar fazer conta.
     return sum((r["valor"] for r in linhas), Decimal(0)) if busca else None
@@ -258,7 +275,7 @@ def _total_geral(conn: psycopg.Connection, linhas: list[dict], consulta, params:
     if linhas:
         return linhas[0]["total_geral"]
     # Busca sem resultado: o total do recorte continua existindo; recalcula sem a busca.
-    sem_busca = conn.execute(consulta, {**params, "busca": None}).fetchall()
+    sem_busca = conn.execute(consulta, {**params, "radicais": None}).fetchall()
     return sem_busca[0]["total_geral"] if sem_busca else None
 
 
@@ -293,7 +310,7 @@ def despesas_por_subfuncao(
         funcao_nome = linha["funcao_nome"]
     consulta = consultas.totais_por_subfuncao(medida)
     params = {"mes_inicio": mes_inicio, "mes_fim": mes_fim, "ano": ano,
-              "funcao_codigo": funcao_codigo, "busca": _sem_acento(busca) if busca else None}
+              "funcao_codigo": funcao_codigo, "radicais": _radicais(busca)}
     linhas = conn.execute(consulta, params).fetchall()
     return TotaisPorSubfuncao(
         anos_dos_dados=[ano] if ano else _anos(conn), medida=medida, mes_inicio=mes_inicio,
@@ -329,7 +346,7 @@ def despesas_tipos_de_gasto(
     orgao_nome = _nome_orgao(conn, orgao_codigo)
     consulta = consultas.totais_por_tipo_gasto(medida, nivel)
     params = {"mes_inicio": mes_inicio, "mes_fim": mes_fim, "ano": ano,
-              "orgao_codigo": orgao_codigo, "busca": _sem_acento(busca) if busca else None}
+              "orgao_codigo": orgao_codigo, "radicais": _radicais(busca)}
     linhas = conn.execute(consulta, params).fetchall()
     return TotaisPorTipoGasto(
         anos_dos_dados=[ano] if ano else _anos(conn), medida=medida, nivel=nivel,

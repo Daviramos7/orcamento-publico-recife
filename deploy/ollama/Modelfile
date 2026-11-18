@@ -1,0 +1,8 @@
+# qwen2.5:7b com janela de contexto de 8k tokens.
+# Motivo (evals 2026-11-18): com 12 ferramentas, o prompt do agente tem ~4.400 tokens e o
+# Ollama, com a janela padrão, cortava o começo da conversa ("truncating input prompt" no
+# server.log). O modelo perdia o resultado das tools e repetia a mesma chamada até o limite.
+# Criar uma vez:   ollama create qwen2.5-7b-8k -f deploy/ollama/Modelfile
+# Usar no .env:    LLM_MODEL=qwen2.5-7b-8k
+FROM qwen2.5:7b
+PARAMETER num_ctx 8192

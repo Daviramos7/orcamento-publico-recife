@@ -718,7 +718,7 @@ with aba_sobre:
             escritas para um LLM ler, e este painel usa a mesma API.</p></div>
           <div class="etapa"><h4>Agente</h4><p>Cada endpoint vira uma ferramenta. Um verificador
             fora do LLM confere se todo número da resposta veio da API.</p></div>
-          <div class="etapa"><h4>Evals</h4><p>30 perguntas com gabarito calculado por SQL direto
+          <div class="etapa"><h4>Evals</h4><p>35 perguntas com gabarito calculado por SQL direto
             nos dados brutos, sem passar pela API. Os resultados ficam versionados.</p></div>
         </div>
         """,
@@ -737,16 +737,18 @@ with aba_sobre:
         linhas.append({
             "Rodada": f"{arq.name[6:8]}/{arq.name[4:6]} {arq.name[9:11]}h{arq.name[11:13]}",
             "Modelo": ag.get("modelo", "qwen2.5:7b"),
+            "Prompt": ag.get("prompt_versao") or "—",
             "Acerto (%)": acerto["media"] if isinstance(acerto, dict) else acerto,
             # métrica criada depois das primeiras rodadas: nelas, não foi medida
             "LLM sem guardrail (%)": "não medido" if sem_g is None else
                 f"{(sem_g['media'] if isinstance(sem_g, dict) else sem_g):.1f}".replace(".", ","),
+            "Casos": ag.get("casos", 30),
             "Repetições": ag.get("repeticoes", 1),
         })
     if linhas:
         st.markdown("### Histórico dos evals")
-        st.caption("Todas as rodadas, inclusive as que pioraram. Números válidos para estes 30 "
-                   "casos, escritos pelo autor; não são uma medida de confiabilidade geral.")
+        st.caption("Todas as rodadas, inclusive as que pioraram. As de 01/11 têm 30 casos; a partir "
+                   "de 18/11, 35. Casos escritos pelo autor: não são uma medida de confiabilidade geral.")
         st.dataframe(linhas, use_container_width=True, hide_index=True,
                      column_config={"Acerto (%)": st.column_config.ProgressColumn(
                          min_value=0, max_value=100, format="%.1f")})

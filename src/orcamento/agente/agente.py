@@ -61,6 +61,9 @@ com busca).
 # v3 (2026-11-18): v1 + subfunção/tipo de gasto (endpoints novos) + parar cedo. Motivo: na
 # pergunta "qual foi o gasto em publicidade" o agente rodou 6 rodadas em círculo (3 chamadas
 # iguais a despesas_orgaos) e só parou no limite. Ver evals/README.md.
+# RESULTADO: não virou padrão. Na mesma API, qwen2.5-7b-8k caiu de 100% (v1) para 94,3% (v3):
+# a regra "pare depois de duas tentativas" fez o modelo desistir após UMA chamada malformada. O
+# que resolveu a pergunta da publicidade foram os endpoints novos, que valem para qualquer prompt.
 _PROMPT_V3 = f"""Você é um assistente que responde perguntas sobre receitas e despesas \
 públicas da Prefeitura do Recife, em português do Brasil.
 

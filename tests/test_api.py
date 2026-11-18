@@ -204,3 +204,13 @@ def test_tipos_de_gasto_por_orgao_e_nivel_invalido(cliente):
     assert [(x["subelemento_nome"], D(x["valor"])) for x in r["itens"]] == [
         ("COMBUSTÍVEIS", 100), ("PUBLICIDADE OFICIAL/LEGAL", 50), ("SERVIÇOS DE PUBLICIDADE E PROPAGANDA", -50)]
     assert cliente.get("/despesas/tipos-de-gasto", params={"nivel": "acao"}).status_code == 422
+
+
+def test_busca_aceita_plural_e_varias_palavras(cliente):
+    # Bug pego pelo eval desp_combustivel: 'combustivel' não achava 'COMBUSTÍVEIS'.
+    r = cliente.get("/despesas/tipos-de-gasto", params={"busca": "combustível"}).json()
+    assert [x["subelemento_nome"] for x in r["itens"]] == ["COMBUSTÍVEIS"] and D(r["total_filtrado"]) == 100
+    r = cliente.get("/despesas/tipos-de-gasto", params={"busca": "publicidade e propaganda"}).json()
+    assert [x["subelemento_nome"] for x in r["itens"]] == ["SERVIÇOS DE PUBLICIDADE E PROPAGANDA"]
+    r = cliente.get("/despesas/subfuncoes", params={"busca": "atencao basica"}).json()
+    assert [x["subfuncao_codigo"] for x in r["subfuncoes"]] == ["301"]

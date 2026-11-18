@@ -1,0 +1,1102 @@
+{
+  "agregado": {
+    "modelo": "gemini-3.5-flash-lite",
+    "prompt_versao": "v1",
+    "llm_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+    "pausa_s": 7.0,
+    "data_utc": "2026-11-18T15:57:21+00:00",
+    "casos": 35,
+    "acerto_pct": {
+      "media": 97.1,
+      "min": 97.1,
+      "max": 97.1
+    },
+    "acerto_llm_sem_guardrail_pct": {
+      "media": 97.1,
+      "min": 97.1,
+      "max": 97.1
+    },
+    "ferramenta_correta_pct": {
+      "media": 100.0,
+      "min": 100.0,
+      "max": 100.0
+    },
+    "respostas_com_numero_sem_suporte": {
+      "media": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "guardrail_acionado": {
+      "media": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "repeticoes": 1
+  },
+  "rodadas": [
+    {
+      "rodada": 1,
+      "resumo": {
+        "casos": 35,
+        "acerto_pct": 97.1,
+        "acerto_llm_sem_guardrail_pct": 97.1,
+        "guardrail_acionado": 0,
+        "ferramenta_correta_pct": 100.0,
+        "respostas_com_numero_sem_suporte": 0,
+        "erros_execucao": 0,
+        "acerto_por_tipo": {
+          "numero": "26/27",
+          "recusa": "4/4",
+          "texto": "4/4"
+        },
+        "duracao_s": 677.2
+      },
+      "casos": [
+        {
+          "id": "desp_total_liquidado",
+          "tipo": "numero",
+          "pergunta": "Quanto a Prefeitura do Recife gastou (liquidado) em 2023?",
+          "esperado": "7803361234.91",
+          "resposta": "A Prefeitura do Recife gastou (valor liquidado) o total de R$ 7.803.361.234,91 em 2023.",
+          "ferramentas_chamadas": [
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1668250043.27\",\"participacao_pct\":\"21.38\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"o"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_total_pago",
+          "tipo": "numero",
+          "pergunta": "Qual foi o valor total pago pela prefeitura em 2023?",
+          "esperado": "7339449931.79",
+          "resposta": "O valor total pago pela prefeitura em 2023 foi de R$ 7.339.449.931,79 (medida: pago).",
+          "ferramentas_chamadas": [
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "medida": "pago"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"pago\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7339449931.79\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1608302567.04\",\"participacao_pct\":\"21.91\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"orgao_"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_total_empenhado",
+          "tipo": "numero",
+          "pergunta": "Quanto foi empenhado no total em 2023?",
+          "esperado": "8162834911.14",
+          "resposta": "O total empenhado pela Prefeitura do Recife em 2023 foi de R$ 8.162.834.911,14.",
+          "ferramentas_chamadas": [
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "medida": "empenhado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"empenhado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"8162834911.14\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1783968236.37\",\"participacao_pct\":\"21.85\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"o"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_orgao_saude",
+          "tipo": "numero",
+          "pergunta": "Quanto a Secretaria de Saúde gastou em 2023?",
+          "esperado": "1668250043.27",
+          "resposta": "A Secretaria de Saúde - Administração Supervisionada (órgão 48) gastou **R$ 1.668.250.043,27** (valor liquidado) em 2023, o que representou 21,38% do total das despesas liquidadas da prefeitura no período.",
+          "ferramentas_chamadas": [
+            "orgaos",
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 3,
+          "chamadas": [
+            {
+              "ferramenta": "orgaos",
+              "argumentos": {
+                "busca": "saude"
+              },
+              "ok": true,
+              "resultado_inicio": "[{\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\"}]"
+            },
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "mes_inicio": 1,
+                "mes_fim": 12,
+                "limite": 10,
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1668250043.27\",\"participacao_pct\":\"21.38\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"o"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_orgao_educacao_pago",
+          "tipo": "numero",
+          "pergunta": "Qual o valor pago pela Secretaria de Educação em 2023?",
+          "esperado": "1468395998.18",
+          "resposta": "O valor pago pela Secretaria de Educação em 2023 foi de R$ 1.468.395.998,18 (medida: pago).",
+          "ferramentas_chamadas": [
+            "orgaos",
+            "despesas_orgaos",
+            "despesas_tipos_de_gasto"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 4,
+          "chamadas": [
+            {
+              "ferramenta": "orgaos",
+              "argumentos": {
+                "busca": "educacao"
+              },
+              "ok": true,
+              "resultado_inicio": "[{\"orgao_codigo\":\"14\",\"orgao_nome\":\"SECRETARIA DE EDUCAÇÃO\"}]"
+            },
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "medida": "pago",
+                "limite": 1
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"pago\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7339449931.79\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1608302567.04\",\"participacao_pct\":\"21.91\"}]}"
+            },
+            {
+              "ferramenta": "despesas_tipos_de_gasto",
+              "argumentos": {
+                "orgao_codigo": "14",
+                "medida": "pago"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"pago\",\"nivel\":\"subelemento\",\"mes_inicio\":1,\"mes_fim\":12,\"orgao_codigo\":\"14\",\"orgao_nome\":\"SECRETARIA DE EDUCAÇÃO\",\"total_geral\":\"1468395998.18\",\"total_filtrado\":null,\"itens\":[{\"posicao\":1,\"elemento_nome\":\"VENCIMENTOS E VANTAGENS FIXAS - PESSOAL CIVIL\",\"subelemento_"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_maior_orgao",
+          "tipo": "texto",
+          "pergunta": "Qual órgão da prefeitura mais gastou em 2023?",
+          "esperado": "SAÚDE",
+          "resposta": "O órgão da prefeitura que mais gastou em 2023 (em despesas liquidadas) foi a **SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA**, com um total de **R$ 1.668.250.043,27**, o que representou **21,38%** do total geral de despesas liquidadas da prefeitura no período (R$ 7.803.361.234,91).",
+          "ferramentas_chamadas": [
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "medida": "liquidado",
+                "limite": 1
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1668250043.27\",\"participacao_pct\":\"21.38\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_participacao_educacao",
+          "tipo": "numero",
+          "pergunta": "Qual a participação percentual da Secretaria de Educação no total gasto em 2023?",
+          "esperado": "20.05",
+          "resposta": "Em 2023, considerando as despesas liquidadas, a **Secretaria de Educação** teve um gasto de **R$ 1.564.218.920,32**, o que representou uma participação percentual de **20,05%** no total gasto pela prefeitura (R$ 7.803.361.234,91).",
+          "ferramentas_chamadas": [
+            "orgaos",
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 3,
+          "chamadas": [
+            {
+              "ferramenta": "orgaos",
+              "argumentos": {
+                "busca": "educacao"
+              },
+              "ok": true,
+              "resultado_inicio": "[{\"orgao_codigo\":\"14\",\"orgao_nome\":\"SECRETARIA DE EDUCAÇÃO\"}]"
+            },
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "limite": 100,
+                "mes_fim": 12,
+                "medilhos": "liquidado",
+                "mes_inicio": 1
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1668250043.27\",\"participacao_pct\":\"21.38\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"o"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_funcao_saude",
+          "tipo": "numero",
+          "pergunta": "Quanto foi gasto com a área de saúde (função saúde) em 2023?",
+          "esperado": "1748758802.01",
+          "resposta": "Em 2023, o valor liquidado com a área de saúde (função saúde) foi de R$ 1.748.758.802,01, o que representou 22,41% do total das despesas da prefeitura.",
+          "ferramentas_chamadas": [
+            "despesas_funcoes"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_funcoes",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"funcoes\":[{\"posicao\":1,\"funcao_codigo\":\"10\",\"funcao_nome\":\"SAÚDE\",\"valor\":\"1748758802.01\",\"participacao_pct\":\"22.41\"},{\"posicao\":2,\"funcao_codigo\":\"15\",\"funcao_nome\":\"URBANISMO\",\"valor\":\"16052724"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_funcao_urbanismo",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura gastou com urbanismo em 2023?",
+          "esperado": "1605272459.22",
+          "resposta": "A Prefeitura do Recife gastou **R$ 1.605.272.459,22** (valor liquidado) com a função **Urbanismo** em 2023.",
+          "ferramentas_chamadas": [
+            "despesas_funcoes"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_funcoes",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"funcoes\":[{\"posicao\":1,\"funcao_codigo\":\"10\",\"funcao_nome\":\"SAÚDE\",\"valor\":\"1748758802.01\",\"participacao_pct\":\"22.41\"},{\"posicao\":2,\"funcao_codigo\":\"15\",\"funcao_nome\":\"URBANISMO\",\"valor\":\"16052724"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_mes_marco",
+          "tipo": "numero",
+          "pergunta": "Quanto foi liquidado em março de 2023?",
+          "esperado": "686620408.19",
+          "resposta": "Em março de 2023, o valor total liquidado pela Prefeitura do Recife foi de R$ 686.620.408,19.",
+          "ferramentas_chamadas": [
+            "despesas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_evolucao_mensal",
+              "argumentos": {
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"orgao_codigo\":null,\"orgao_nome\":null,\"meses\":[{\"ano_mes\":\"2023-01\",\"valor\":\"218131510.00\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"218131510.00\"},{\"ano_mes\":\"2023-02\",\"valor\":\"539234944.84\",\"variacao_abs\":\"321103434.84\",\"variacao_pct\":\"1"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_mes_maior",
+          "tipo": "texto",
+          "pergunta": "Em qual mês de 2023 a prefeitura mais gastou?",
+          "esperado": "dezembro",
+          "resposta": "Em 2023, o mês em que a prefeitura mais gastou (despesa liquidada) foi **dezembro**, com o valor de **R$ 1.135.636.483,78**.",
+          "ferramentas_chamadas": [
+            "despesas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_evolucao_mensal",
+              "argumentos": {
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"orgao_codigo\":null,\"orgao_nome\":null,\"meses\":[{\"ano_mes\":\"2023-01\",\"valor\":\"218131510.00\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"218131510.00\"},{\"ano_mes\":\"2023-02\",\"valor\":\"539234944.84\",\"variacao_abs\":\"321103434.84\",\"variacao_pct\":\"1"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_variacao_nov_dez",
+          "tipo": "numero",
+          "pergunta": "Qual foi a variação percentual da despesa liquidada de novembro para dezembro de 2023?",
+          "esperado": "62.44",
+          "resposta": "A variação percentual da despesa liquidada de novembro para dezembro de 2023 foi de **62,44%**. \n\nEm novembro de 2023, o valor liquidado foi de R$ 699.107.394,40, passando para R$ 1.135.636.483,78 em dezembro de 2023.",
+          "ferramentas_chamadas": [
+            "despesas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_evolucao_mensal",
+              "argumentos": {
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"orgao_codigo\":null,\"orgao_nome\":null,\"meses\":[{\"ano_mes\":\"2023-01\",\"valor\":\"218131510.00\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"218131510.00\"},{\"ano_mes\":\"2023-02\",\"valor\":\"539234944.84\",\"variacao_abs\":\"321103434.84\",\"variacao_pct\":\"1"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_acumulado_junho",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura tinha liquidado no acumulado de janeiro a junho de 2023?",
+          "esperado": "3320308236.51",
+          "resposta": "No acumulado de janeiro a junho de 2023, a prefeitura liquidou o total de **R$ 3.320.308.236,51**.",
+          "ferramentas_chamadas": [
+            "metadados",
+            "despesas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 3,
+          "chamadas": [
+            {
+              "ferramenta": "metadados",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"fonte\":\"Portal de Dados Abertos do Recife — despesas e receitas orçamentárias\",\"anos_disponiveis\":[2023],\"meses_disponiveis\":[1,2,3,4,5,6,7,8,9,10,11,12],\"granularidade_tempo\":\"mensal (não há data por dia)\",\"medidas_despesa\":[\"empenhado\",\"liquidado\",\"pago\"],\"tem_receitas\":true,\"nao_disponivel\":[\"a"
+            },
+            {
+              "ferramenta": "despesas_evolucao_mensal",
+              "argumentos": {
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"orgao_codigo\":null,\"orgao_nome\":null,\"meses\":[{\"ano_mes\":\"2023-01\",\"valor\":\"218131510.00\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"218131510.00\"},{\"ano_mes\":\"2023-02\",\"valor\":\"539234944.84\",\"variacao_abs\":\"321103434.84\",\"variacao_pct\":\"1"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_maior_credor",
+          "tipo": "texto",
+          "pergunta": "Qual credor mais recebeu pagamentos da prefeitura em 2023?",
+          "esperado": "RECIFIN",
+          "resposta": "O credor que mais recebeu pagamentos da prefeitura em 2023 foi o **FUNDO FINANC RECIFIN FUNCIONARIOS RELACIONADOS EM FOLHA DE PAGAMENTO**, com o total de **R$ 509.742.334,15** (medida: pago).",
+          "ferramentas_chamadas": [
+            "despesas_credores_ranking"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_credores_ranking",
+              "argumentos": {
+                "limite": 1,
+                "medida": "pago"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"pago\",\"orgao_codigo\":null,\"orgao_nome\":null,\"credores\":[{\"posicao\":1,\"credor_nome\":\"FUNDO FINANC RECIFIN FUNCIONARIOS RELACIONADOS EM FOLHA DE PAGAMENTO\",\"credor_codigos\":[\"09900231\"],\"valor\":\"509742334.15\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_credor_caixa",
+          "tipo": "numero",
+          "pergunta": "Quanto a Caixa Econômica Federal recebeu (valor pago) da prefeitura em 2023?",
+          "esperado": "253709274.72",
+          "resposta": "Em 2023, a Caixa Econômica Federal recebeu o valor total pago de R$ 253.709.274,72 da Prefeitura do Recife.",
+          "ferramentas_chamadas": [
+            "despesas_credores_ranking"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_credores_ranking",
+              "argumentos": {
+                "busca": "caixa economica",
+                "medida": "pago"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"pago\",\"orgao_codigo\":null,\"orgao_nome\":null,\"credores\":[{\"posicao\":2,\"credor_nome\":\"CAIXA ECONOMICA FEDERAL\",\"credor_codigos\":[\"04100303\",\"04500018\",\"04500052\",\"04500183\",\"09100070\"],\"valor\":\"253709274.72\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_educacao_dezembro",
+          "tipo": "numero",
+          "pergunta": "Quanto a Secretaria de Educação liquidou em dezembro de 2023?",
+          "esperado": "232569287.60",
+          "resposta": "A Secretaria de Educação liquidou **R$ 232.569.287,60** em dezembro de 2023.",
+          "ferramentas_chamadas": [
+            "orgaos",
+            "despesas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 3,
+          "chamadas": [
+            {
+              "ferramenta": "orgaos",
+              "argumentos": {
+                "busca": "educacao"
+              },
+              "ok": true,
+              "resultado_inicio": "[{\"orgao_codigo\":\"14\",\"orgao_nome\":\"SECRETARIA DE EDUCAÇÃO\"}]"
+            },
+            {
+              "ferramenta": "despesas_evolucao_mensal",
+              "argumentos": {
+                "orgao_codigo": "14",
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"orgao_codigo\":\"14\",\"orgao_nome\":\"SECRETARIA DE EDUCAÇÃO\",\"meses\":[{\"ano_mes\":\"2023-01\",\"valor\":\"54790116.97\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"54790116.97\"},{\"ano_mes\":\"2023-02\",\"valor\":\"91158574.49\",\"variacao_abs\":\"36368457.52\",\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_empenhado_1tri",
+          "tipo": "numero",
+          "pergunta": "Quanto foi empenhado no primeiro trimestre de 2023 (janeiro a março)?",
+          "esperado": "3138469321.69",
+          "resposta": "No primeiro trimestre de 2023 (janeiro a março), o valor total empenhado pela Prefeitura do Recife foi de **R$ 3.138.469.321,69**.",
+          "ferramentas_chamadas": [
+            "metadados",
+            "despesas_orgaos"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 3,
+          "chamadas": [
+            {
+              "ferramenta": "metadados",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"fonte\":\"Portal de Dados Abertos do Recife — despesas e receitas orçamentárias\",\"anos_disponiveis\":[2023],\"meses_disponiveis\":[1,2,3,4,5,6,7,8,9,10,11,12],\"granularidade_tempo\":\"mensal (não há data por dia)\",\"medidas_despesa\":[\"empenhado\",\"liquidado\",\"pago\"],\"tem_receitas\":true,\"nao_disponivel\":[\"a"
+            },
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "limite": 1,
+                "medida": "empenhado",
+                "mes_inicio": 1,
+                "mes_fim": 3
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"empenhado\",\"mes_inicio\":1,\"mes_fim\":3,\"total_geral\":\"3138469321.69\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"809810723.45\",\"participacao_pct\":\"25.80\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_total_arrecadado",
+          "tipo": "numero",
+          "pergunta": "Quanto a Prefeitura do Recife arrecadou em 2023?",
+          "esperado": "7882016730.69",
+          "resposta": "A Prefeitura do Recife arrecadou R$ 7.882.016.730,69 em 2023.",
+          "ferramentas_chamadas": [
+            "receitas_origens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_origens",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"mes_inicio\":1,\"mes_fim\":12,\"total_arrecadado\":\"7882016730.69\",\"total_previsto_atualizado\":\"8762299014.82\",\"total_execucao_pct\":\"89.95\",\"origens\":[{\"posicao\":1,\"categoria_receita_nome\":\"RECEITAS CORRENTES\",\"origem_nome\":\"TRANSFERÊNCIAS CORRENTES\",\"arrecadado\":\"3157279024.93\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_iptu",
+          "tipo": "numero",
+          "pergunta": "Quanto foi arrecadado de IPTU em 2023?",
+          "esperado": "660545540.80",
+          "resposta": "Foi arrecadado o total de **R$ 660.545.540,80** referentes ao IPTU (Imposto Sobre a Propriedade Predial e Territorial Urbana) em 2023.",
+          "ferramentas_chamadas": [
+            "receitas_itens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_itens",
+              "argumentos": {
+                "busca": "IPTU"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"busca\":\"IPTU\",\"mes_inicio\":1,\"mes_fim\":12,\"itens\":[{\"alinea_codigo\":\"50\",\"alinea_nome\":\"IMPOSTO SOBRE A PROPRIEDADE PREDIAL E TERRITORIAL URBANA\",\"origem_nome\":\"IMPOSTOS, TAXAS E CONTRIBUIÇÕES DE MELHORIA\",\"arrecadado\":\"660545540.80\",\"previsto_atualizado\":\"639938570.33\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_iss",
+          "tipo": "numero",
+          "pergunta": "Qual foi a arrecadação de ISS em 2023?",
+          "esperado": "1324353323.90",
+          "resposta": "A arrecadação de ISS em 2023 foi de R$ 1.324.353.323,90 (previsto atualizado de R$ 1.412.526.801,29).",
+          "ferramentas_chamadas": [
+            "receitas_itens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_itens",
+              "argumentos": {
+                "busca": "ISS"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"busca\":\"ISS\",\"mes_inicio\":1,\"mes_fim\":12,\"itens\":[{\"alinea_codigo\":\"51\",\"alinea_nome\":\"IMPOSTOS SOBRE SERVIÇOS\",\"origem_nome\":\"IMPOSTOS, TAXAS E CONTRIBUIÇÕES DE MELHORIA\",\"arrecadado\":\"1324353323.90\",\"previsto_atualizado\":\"1412526801.29\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_fpm",
+          "tipo": "numero",
+          "pergunta": "Quanto o Recife recebeu do Fundo de Participação dos Municípios (FPM) em 2023?",
+          "esperado": "767269175.34",
+          "resposta": "O Recife recebeu **R$ 767.269.175,34** da Cota-Parte do Fundo de Participação dos Municípios (FPM) em 2023 (valor arrecadado).",
+          "ferramentas_chamadas": [
+            "receitas_itens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_itens",
+              "argumentos": {
+                "busca": "FPM"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"busca\":\"FPM\",\"mes_inicio\":1,\"mes_fim\":12,\"itens\":[{\"alinea_codigo\":\"51\",\"alinea_nome\":\"COTA-PARTE DO FUNDO DE PARTICIPAÇÃO DOS MUNICÍPIOS - FPM\",\"origem_nome\":\"TRANSFERÊNCIAS CORRENTES\",\"arrecadado\":\"767269175.34\",\"previsto_atualizado\":\"795000000.00\"}]}"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_previsto",
+          "tipo": "numero",
+          "pergunta": "Qual era a receita prevista (atualizada) para 2023?",
+          "esperado": "8762299014.82",
+          "resposta": "A receita prevista atualizada para 2023 foi de R$ 8.762.299.014,82.",
+          "ferramentas_chamadas": [
+            "receitas_origens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_origens",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"mes_inicio\":1,\"mes_fim\":12,\"total_arrecadado\":\"7882016730.69\",\"total_previsto_atualizado\":\"8762299014.82\",\"total_execucao_pct\":\"89.95\",\"origens\":[{\"posicao\":1,\"categoria_receita_nome\":\"RECEITAS CORRENTES\",\"origem_nome\":\"TRANSFERÊNCIAS CORRENTES\",\"arrecadado\":\"3157279024.93\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_execucao",
+          "tipo": "numero",
+          "pergunta": "Que percentual da receita prevista a prefeitura conseguiu arrecadar em 2023?",
+          "esperado": "89.95",
+          "resposta": "Em 2023, a Prefeitura do Recife arrecadou **89,95%** da receita prevista. \n\nFoi arrecadado um total de R$ 7.882.016.730,69 de uma receita prevista atualizada de R$ 8.762.299.014,82.",
+          "ferramentas_chamadas": [
+            "receitas_origens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_origens",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"mes_inicio\":1,\"mes_fim\":12,\"total_arrecadado\":\"7882016730.69\",\"total_previsto_atualizado\":\"8762299014.82\",\"total_execucao_pct\":\"89.95\",\"origens\":[{\"posicao\":1,\"categoria_receita_nome\":\"RECEITAS CORRENTES\",\"origem_nome\":\"TRANSFERÊNCIAS CORRENTES\",\"arrecadado\":\"3157279024.93\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_janeiro",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura arrecadou em janeiro de 2023?",
+          "esperado": "606890415.32",
+          "resposta": "Em janeiro de 2023, a Prefeitura do Recife arrecadou R$ 606.890.415,32.",
+          "ferramentas_chamadas": [
+            "receitas_evolucao_mensal"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_evolucao_mensal",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"meses\":[{\"ano_mes\":\"2023-01\",\"arrecadado\":\"606890415.32\",\"variacao_abs\":null,\"variacao_pct\":null,\"acumulado_ano\":\"606890415.32\"},{\"ano_mes\":\"2023-02\",\"arrecadado\":\"920543928.13\",\"variacao_abs\":\"313653512.81\",\"variacao_pct\":\"51.68\",\"acumulado_ano\":\"1527434343.45\"},{\"ano_mes\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "rec_transferencias_correntes",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura arrecadou com transferências correntes em 2023?",
+          "esperado": "3157279024.93",
+          "resposta": "Em 2023, a prefeitura arrecadou R$ 3.157.279.024,93 com transferências correntes (90,11% do previsto atualizado).",
+          "ferramentas_chamadas": [
+            "receitas_origens"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "receitas_origens",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"mes_inicio\":1,\"mes_fim\":12,\"total_arrecadado\":\"7882016730.69\",\"total_previsto_atualizado\":\"8762299014.82\",\"total_execucao_pct\":\"89.95\",\"origens\":[{\"posicao\":1,\"categoria_receita_nome\":\"RECEITAS CORRENTES\",\"origem_nome\":\"TRANSFERÊNCIAS CORRENTES\",\"arrecadado\":\"3157279024.93\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "comp_saldo",
+          "tipo": "numero",
+          "pergunta": "Em 2023 a prefeitura arrecadou mais do que gastou? Qual foi o saldo?",
+          "esperado": "70324307.66",
+          "resposta": "Sim, em 2023 a prefeitura arrecadou mais do que gastou (considerando a despesa liquidada e excluindo operações intraorçamentárias). \n\n* **Receita arrecadada:** R$ 7.470.518.433,33\n* **Despesa liquidada:** R$ 7.400.194.125,67\n* **Saldo:** R$ 70.324.307,66",
+          "ferramentas_chamadas": [
+            "comparativo_receita_despesa"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "comparativo_receita_despesa",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida_despesa\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"excluir_intraorcamentarias\":true,\"receita_arrecadada\":\"7470518433.33\",\"despesa\":\"7400194125.67\",\"saldo\":\"70324307.66\",\"observacao\":\"Valores SEM operações intraorçamentárias: não são os totais da prefeitura.\",\"meses\":["
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "recusa_outro_ano",
+          "tipo": "recusa",
+          "pergunta": "Quanto a Secretaria de Saúde gastou em 2022?",
+          "esperado": null,
+          "resposta": "Não tenho esse dado. Os dados disponíveis na base referem-se apenas ao ano de 2023.",
+          "ferramentas_chamadas": [
+            "orgaos",
+            "despesas_orgaos",
+            "metadados"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 4,
+          "chamadas": [
+            {
+              "ferramenta": "orgaos",
+              "argumentos": {
+                "busca": "saude"
+              },
+              "ok": true,
+              "resultado_inicio": "[{\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\"}]"
+            },
+            {
+              "ferramenta": "despesas_orgaos",
+              "argumentos": {
+                "mes_fim": 12,
+                "orgao_codigo": "48",
+                "mes_inicio": 1
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"total_geral\":\"7803361234.91\",\"orgaos\":[{\"posicao\":1,\"orgao_codigo\":\"48\",\"orgao_nome\":\"SECRETARIA DE SAÚDE - ADMINISTRAÇÃO SUPERVISIONADA\",\"valor\":\"1668250043.27\",\"participacao_pct\":\"21.38\"},{\"posicao\":2,\"orgao_codigo\":\"14\",\"o"
+            },
+            {
+              "ferramenta": "metadados",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"fonte\":\"Portal de Dados Abertos do Recife — despesas e receitas orçamentárias\",\"anos_disponiveis\":[2023],\"meses_disponiveis\":[1,2,3,4,5,6,7,8,9,10,11,12],\"granularidade_tempo\":\"mensal (não há data por dia)\",\"medidas_despesa\":[\"empenhado\",\"liquidado\",\"pago\"],\"tem_receitas\":true,\"nao_disponivel\":[\"a"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "recusa_bairro",
+          "tipo": "recusa",
+          "pergunta": "Quanto a prefeitura gastou no bairro de Boa Viagem em 2023?",
+          "esperado": null,
+          "resposta": "Não tenho esse dado. Os registros de despesas da Prefeitura do Recife não possuem detalhamento por localização geográfica, como bairros (ex.: Boa Viagem).",
+          "ferramentas_chamadas": [
+            "metadados"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "metadados",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"fonte\":\"Portal de Dados Abertos do Recife — despesas e receitas orçamentárias\",\"anos_disponiveis\":[2023],\"meses_disponiveis\":[1,2,3,4,5,6,7,8,9,10,11,12],\"granularidade_tempo\":\"mensal (não há data por dia)\",\"medidas_despesa\":[\"empenhado\",\"liquidado\",\"pago\"],\"tem_receitas\":true,\"nao_disponivel\":[\"a"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "recusa_salario",
+          "tipo": "recusa",
+          "pergunta": "Qual é o salário do prefeito do Recife?",
+          "esperado": null,
+          "resposta": "Não tenho esse dado. Os dados disponíveis referem-se apenas à execução orçamentária global de receitas e despesas da prefeitura, não contemplando a remuneração individual de cargos.",
+          "ferramentas_chamadas": [],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 1,
+          "chamadas": [],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "recusa_dia",
+          "tipo": "recusa",
+          "pergunta": "Quanto a prefeitura gastou no dia 15 de março de 2023?",
+          "esperado": null,
+          "resposta": "Não tenho esse dado. Os dados de despesa disponíveis na base possuem granularidade mensal, não sendo possível consultar gastos por dia específico.",
+          "ferramentas_chamadas": [
+            "metadados"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "metadados",
+              "argumentos": {},
+              "ok": true,
+              "resultado_inicio": "{\"fonte\":\"Portal de Dados Abertos do Recife — despesas e receitas orçamentárias\",\"anos_disponiveis\":[2023],\"meses_disponiveis\":[1,2,3,4,5,6,7,8,9,10,11,12],\"granularidade_tempo\":\"mensal (não há data por dia)\",\"medidas_despesa\":[\"empenhado\",\"liquidado\",\"pago\"],\"tem_receitas\":true,\"nao_disponivel\":[\"a"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_publicidade",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura gastou com publicidade em 2023?",
+          "esperado": "58929925.99",
+          "resposta": "A Prefeitura do Recife gastou o total liquidado de **R$ 58.929.925,99** com publicidade em 2023.",
+          "ferramentas_chamadas": [
+            "despesas_tipos_de_gasto"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_tipos_de_gasto",
+              "argumentos": {
+                "medida": "liquidado",
+                "busca": "publicidade"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"nivel\":\"subelemento\",\"mes_inicio\":1,\"mes_fim\":12,\"orgao_codigo\":null,\"orgao_nome\":null,\"total_geral\":\"7803361234.91\",\"total_filtrado\":\"58929925.99\",\"itens\":[{\"posicao\":31,\"elemento_nome\":\"OUTROS SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA\",\"subelemento_nome"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_combustivel",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura gastou com combustível?",
+          "esperado": "14052752.07",
+          "resposta": "A prefeitura gastou **R$ 124.988,76** (valor liquidado) com combustível (subelemento \"TICKET COMBUSTÍVEL\").",
+          "ferramentas_chamadas": [
+            "despesas_tipos_de_gasto"
+          ],
+          "ferramenta_ok": true,
+          "acerto": false,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_tipos_de_gasto",
+              "argumentos": {
+                "busca": "combustivel",
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"nivel\":\"subelemento\",\"mes_inicio\":1,\"mes_fim\":12,\"orgao_codigo\":null,\"orgao_nome\":null,\"total_geral\":\"7803361234.91\",\"total_filtrado\":\"124988.76\",\"itens\":[{\"posicao\":298,\"elemento_nome\":\"OUTROS SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA\",\"subelemento_nome\""
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": false,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_subfuncao_atencao_basica",
+          "tipo": "numero",
+          "pergunta": "Quanto foi gasto com atenção básica em saúde?",
+          "esperado": "813867571.33",
+          "resposta": "Foi gasto o valor de **R$ 813.867.571,33** (despesa liquidada) com Atenção Básica.",
+          "ferramentas_chamadas": [
+            "despesas_subfuncoes"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_subfuncoes",
+              "argumentos": {
+                "busca": "atencao basica"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"funcao_codigo\":null,\"funcao_nome\":null,\"total_geral\":\"7803361234.91\",\"total_filtrado\":\"813867571.33\",\"subfuncoes\":[{\"posicao\":3,\"subfuncao_codigo\":\"301\",\"subfuncao_nome\":\"ATENÇÃO BÁSICA\",\"valor\":\"813867571.33\",\"participacao_p"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_subfuncao_comunicacao",
+          "tipo": "numero",
+          "pergunta": "Quanto a prefeitura gastou com comunicação social?",
+          "esperado": "93498407.50",
+          "resposta": "A Prefeitura do Recife gastou **R$ 93.498.407,50** com comunicação social (subfunção), em despesas liquidadas, o que representa 1,20% do total gasto pelo município.",
+          "ferramentas_chamadas": [
+            "despesas_subfuncoes"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_subfuncoes",
+              "argumentos": {
+                "busca": "comunicacao social"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"funcao_codigo\":null,\"funcao_nome\":null,\"total_geral\":\"7803361234.91\",\"total_filtrado\":\"93498407.50\",\"subfuncoes\":[{\"posicao\":15,\"subfuncao_codigo\":\"131\",\"subfuncao_nome\":\"COMUNICAÇÃO SOCIAL\",\"valor\":\"93498407.50\",\"participaca"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        },
+        {
+          "id": "desp_saude_maior_subfuncao",
+          "tipo": "texto",
+          "pergunta": "Dentro da saúde, qual subárea recebeu mais dinheiro?",
+          "esperado": "ATENÇÃO BÁSICA",
+          "resposta": "Dentro da função Saúde, a subárea que recebeu mais dinheiro (despesa liquidada) foi **Atenção Básica**, com o valor de **R$ 813.867.571,33** (46,54% do total da saúde).",
+          "ferramentas_chamadas": [
+            "despesas_subfuncoes"
+          ],
+          "ferramenta_ok": true,
+          "acerto": true,
+          "numeros_sem_suporte": [],
+          "iteracoes": 2,
+          "chamadas": [
+            {
+              "ferramenta": "despesas_subfuncoes",
+              "argumentos": {
+                "funcao_codigo": "10",
+                "medida": "liquidado"
+              },
+              "ok": true,
+              "resultado_inicio": "{\"anos_dos_dados\":[2023],\"medida\":\"liquidado\",\"mes_inicio\":1,\"mes_fim\":12,\"funcao_codigo\":\"10\",\"funcao_nome\":\"SAÚDE\",\"total_geral\":\"1748758802.01\",\"total_filtrado\":null,\"subfuncoes\":[{\"posicao\":1,\"subfuncao_codigo\":\"301\",\"subfuncao_nome\":\"ATENÇÃO BÁSICA\",\"valor\":\"813867571.33\",\"participacao_pct\":\"46"
+            }
+          ],
+          "guardrail": null,
+          "acerto_llm": true,
+          "erro": null,
+          "numeros_derivados": null
+        }
+      ]
+    }
+  ]
+}
