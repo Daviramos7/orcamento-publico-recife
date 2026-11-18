@@ -1,10 +1,11 @@
 name: keepalive-supabase
 
-# O plano gratuito do Supabase pausa o projeto após 7 dias sem atividade.
-# Uma consulta leve a cada 3 dias mantém o app online acordado.
+# O plano gratuito do Supabase pausa projetos com pouca atividade na semana. A doc fala em
+# "algumas requisições por dia": com um ping a cada 3 dias o projeto pausou mesmo assim
+# (encontrado INACTIVE em 2026-11-18, com todos os pings verdes). Agora roda 2x por dia.
 on:
   schedule:
-    - cron: "17 11 */3 * *"
+    - cron: "17 11,23 * * *"
   workflow_dispatch:
 
 jobs:
