@@ -13,12 +13,14 @@ Recife em 2023. O agente cita só números que vieram da API, e isso é **medido
 > inventado.
 > [Detalhes e limites](#-resultados-dos-evals).
 
+[![Tela inicial do app: receita e despesa de 2023 e o chat com o agente](docs/img/app-inicio.png)](https://orcamento-recife.streamlit.app)
+
 ---
 
 ## 🎯 O problema
 
 Os dados de orçamento do Recife são públicos, mas responder "quanto a prefeitura arrecadou de IPTU"
-ou "a despesa superou a receita em algum mês?" exige baixar CSVs de 80 MB, entender a
+ou "a despesa superou a receita em algum mês?" exige baixar CSVs de 86 MB, entender a
 classificação orçamentária e somar do jeito certo (empenhado, liquidado ou pago? com ou sem
 operações intraorçamentárias?).
 
@@ -123,7 +125,20 @@ Edite o `.env` e deixe **só uma** opção descomentada: 1 = Ollama (padrão), 2
 **Acesse: <https://orcamento-recife.streamlit.app>**
 
 Painel com os números do orçamento e um chat com o agente, que mostra **quais consultas à API
-fez** e se **todos os números foram conferidos**. Tudo em planos gratuitos:
+fez** e se **todos os números foram conferidos**.
+
+Resposta real do agente (Gemini), com a consulta que ele fez e o selo do verificador de números:
+
+![Pergunta sobre publicidade respondida com R$ 58.929.925,99, uma consulta à API e o selo de números conferidos](docs/img/app-resposta.png)
+
+<details>
+<summary>Painel (receita × despesa mês a mês, órgãos, origens da receita e credores)</summary>
+
+![Painel com o gráfico mensal de receita e despesa e os rankings de órgãos, origens e credores](docs/img/app-painel.png)
+
+</details>
+
+Tudo em planos gratuitos:
 
 ```text
 Visitante ─► Streamlit Community Cloud ── app + API FastAPI + agente (no mesmo processo)
